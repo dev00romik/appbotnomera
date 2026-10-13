@@ -26,7 +26,7 @@ async def cmd_start(message: types.Message):
     # когда Render выдаст домен — заменим его.
     builder.button(
         text="🚗 Открыть генератор номеров", 
-        web_app=types.WebAppInfo(url="https:// твой-сайт-на-render.com")
+        web_app=types.WebAppInfo(url="https://appbotnomera-2.onrender.com")
     )
     await message.answer(
         "👋 Привет! Это генератор автономеров Украины, Беларуси и России.\n\n"
