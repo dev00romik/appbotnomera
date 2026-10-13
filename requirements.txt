@@ -1,0 +1,6 @@
+aiogram==3.13.0
+fastapi==0.112.0
+uvicorn==0.30.6
+asyncpg==0.29.0
+psycopg2-binary==2.9.9
+pydantic==2.8.2
