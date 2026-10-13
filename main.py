@@ -10,7 +10,7 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 # Настройки
 BOT_TOKEN = "8609625925:AAF72Vk5wI1oJJ5_QlztYq6CZqGiZBN3F6w"
-DATABASE_URL = os.getenv("postgresql://postgres:[polsukyi2009]@db.gdxoodthdiccoaqfrttg.supabase.co:5432/postgres")  # двухступенчатая проверка
+DATABASE_URL = os.getenv("DATABASE_URL")  # двухступенчатая проверка
 
 logging.basicConfig(level=logging.INFO)
 app = FastAPI()
