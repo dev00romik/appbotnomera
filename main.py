@@ -27,8 +27,8 @@ async def cmd_start(message: types.Message):
         web_app=types.WebAppInfo(url="https://appbotnomera-2.onrender.com")
     )
     await message.answer(
-        "🔥 **нАмерок // Официальный клиент** 🔥\n\n"
-        "Твой личный профиль, гараж редких госномеров России, Украины и Беларуси, квесты и биржа в одном месте!",
+        "🔥 **нАмерок 2100 // Официальный клиент** 🔥\n\n"
+        "Крути госномера всех регионов России, Украины и Беларуси, прокачивай уровень, торгуй на бирже и открывай редчайшие мифические знаки!",
         reply_markup=builder.as_markup(),
         parse_mode="Markdown"
     )
@@ -40,16 +40,26 @@ async def on_startup():
         await dp.start_polling(bot)
     asyncio.create_task(run_bot())
 
+# Полные списки букв и регионов
 RU_LETTERS = ['А', 'В', 'Е', 'К', 'М', 'Н', 'О', 'Р', 'С', 'Т', 'У', 'Х']
-RU_REGIONS = ['77', '99', '177', '777', '78', '98', '161', '50']
-UA_SERIES = ['AA', 'KA', 'BC', 'HC', 'AE', 'BH', 'BI', 'AX', 'AP', 'CB']
-BY_LETTERS = ['AB', 'BM', 'CT', 'MH', 'PB', 'OO']
+RU_ALL_REGIONS = [
+    '77', '99', '177', '199', '777', '799', '78', '98', '178', '198', 
+    '50', '90', '150', '190', '750', '161', '761', '102', '702', '116', '716',
+    '23', '93', '123', '193', '25', '125', '36', '136', '63', '163', '66', '96', '196'
+]
+
+UA_SERIES = [
+    'AA', 'KA', 'BC', 'HC', 'AE', 'BH', 'BI', 'AX', 'AP', 'CB', 'AM', 'AO', 'BX', 'CH', 'DP'
+]
+
+BY_LETTERS = ['AB', 'BM', 'CT', 'MH', 'PB', 'OO', 'AK', 'BI', 'CK']
 BY_REGIONS = ['1', '2', '3', '4', '5', '6', '7']
 
 @app.get("/api/spin")
-def spin_plates(country: str, tier: str = "normal"):
+def spin_plates(country: str, region: str = "auto", tier: str = "normal"):
     roll = random.random()
     
+    # 6 уровней редкости
     if tier == "elite":
         if roll < 0.05:
             rarity, color, title, val_mult = "мистический", "purple", "✨ МИСТИЧЕСКИЙ КВАНТ", 1500000
@@ -79,22 +89,27 @@ def spin_plates(country: str, tier: str = "normal"):
 
     if country == "ru":
         l1 = random.choice(RU_LETTERS)
-        digits = f"{random.randint(1, 999):03d}" if rarity in ["обычный", "редкий"] else random.choice(["777", "001", "999", "333"])
+        digits = f"{random.randint(1, 999):03d}" if rarity in ["обычный", "редкий"] else random.choice(["777", "001", "999", "333", "555"])
         l23 = "".join(random.choices(RU_LETTERS, k=2))
-        reg = random.choice(RU_REGIONS)
+        reg = region if region != "auto" else random.choice(RU_ALL_REGIONS)
         number_str = f"{l1} {digits} {l23}"
         region_str = reg
     elif country == "ua":
-        series = random.choice(UA_SERIES)
+        series = region if region != "auto" else random.choice(UA_SERIES)
         digits = f"{random.randint(1, 9999):04d}" if rarity in ["обычный", "редкий"] else str(random.choice([1, 7, 9])) * 4
-        number_str = f"{series} {digits}"
+        suf = random.choice(['AA', 'AB', 'BA', 'BX', 'CB'])
+        number_str = f"{series} {digits} {suf}"
         region_str = "UA"
     else:
         digits = f"{random.randint(1, 9999):04d}"
         let = random.choice(BY_LETTERS)
-        reg = random.choice(BY_REGIONS)
+        reg = region if region != "auto" else random.choice(BY_REGIONS)
         number_str = f"{digits} {let}"
         region_str = reg
+
+    # Добавочная стоимость за престижные регионы
+    if region_str in ['777', '799', '199', '77', 'AA', 'KA', '7']:
+        val_mult = int(val_mult * 1.3)
 
     return {
         "number": number_str,
@@ -114,7 +129,7 @@ def get_webapp():
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-        <title>нАмерок</title>
+        <title>нАмерок 2100</title>
         <script src="https://telegram.org/js/telegram-web-app.js"></script>
         <script src="https://cdn.tailwindcss.com"></script>
         <style>
@@ -138,7 +153,7 @@ def get_webapp():
             @keyframes blueGlow { 0%, 100% { border-color: #3b82f6; box-shadow: 0 0 15px rgba(59,130,246,0.5); } 50% { border-color: #60a5fa; box-shadow: 0 0 30px rgba(59,130,246,0.9); } }
             @keyframes yellowGlow { 0%, 100% { border-color: #eab308; box-shadow: 0 0 20px rgba(234,179,8,0.6); } 50% { border-color: #facc15; box-shadow: 0 0 40px rgba(234,179,8,1); } }
             @keyframes redGlow { 0%, 100% { border-color: #ef4444; box-shadow: 0 0 25px rgba(239,68,68,0.7); } 50% { border-color: #f87171; box-shadow: 0 0 45px rgba(239,68,68,1); } }
-            @keyframes purpleGlow { 0%, 100% { border-color: #a855f7; box-shadow: 0 0 30px rgba(168,85,247,0.8); } 50% { border-color: #ec4899; box-shadow: 0 0 60px rgba(236,72,153,1); } }
+            @keyframes purpleGlow { 0%, 100% { border-color: #a855f7; box-shadow: 0 0 30px rgba(168,85,247,0.8); filter: hue-rotate(0deg); } 50% { border-color: #ec4899; box-shadow: 0 0 60px rgba(236,72,153,1); filter: hue-rotate(90deg); } }
 
             .glow-gray { animation: grayGlow 3s infinite; }
             .glow-green { animation: greenGlow 2s infinite; }
@@ -146,6 +161,15 @@ def get_webapp():
             .glow-yellow { animation: yellowGlow 1.5s infinite; }
             .glow-red { animation: redGlow 1s infinite; }
             .glow-purple { animation: purpleGlow 0.8s infinite; }
+
+            .balance-pop {
+                animation: pop 0.4s ease-out;
+            }
+            @keyframes pop {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.15); color: #34d399; }
+                100% { transform: scale(1); }
+            }
         </style>
     </head>
     <body class="min-h-screen flex flex-col select-none pb-8 overflow-x-hidden">
@@ -154,25 +178,109 @@ def get_webapp():
         <header class="bg-slate-900/90 border-b border-slate-800 p-3 flex justify-between items-center sticky top-0 z-50">
             <div class="flex flex-col">
                 <span class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Баланс</span>
-                <span id="balance" class="font-mono font-black text-lg text-emerald-400">1 250 000 ₽</span>
+                <span id="balance" class="font-mono font-black text-lg text-emerald-400 transition-all duration-300">1 250 000 ₽</span>
             </div>
             
             <div class="flex items-center gap-2">
                 <div class="text-xs bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-700 text-slate-300 font-bold flex items-center gap-1.5">
                     <span>Ур. <span id="level" class="text-white">1</span></span>
                     <span class="text-slate-600">|</span>
-                    <span class="flex items-center text-amber-400">🔥 <span id="energy" class="text-white ml-0.5">0</span></span>
+                    <span class="text-[10px] text-indigo-400"><span id="exp">0</span>/100 EXP</span>
                 </div>
-                <!-- КНОПКА ПРОФИЛЯ / МЕНЮ -->
                 <button onclick="showView('profile')" class="bg-indigo-600 hover:bg-indigo-500 p-2 px-3 rounded-xl border border-indigo-400/50 text-white transition flex items-center gap-1 active:scale-95 shadow-md shadow-indigo-950/50">
                     👤 Меню
                 </button>
             </div>
         </header>
 
-        <!-- ЭКРАН 1: ПРОФИЛЬ И ХАБ (ГЛАВНЫЙ) -->
-        <div id="view-profile" class="p-4 flex flex-col flex-1 max-w-md mx-auto w-full space-y-4">
-            <!-- Карточка пользователя -->
+        <!-- ЭКРАН 1: СЛОТЫ И КРУТКА (ВСТРЕЧАЕТ СРАЗУ) -->
+        <div id="view-slots" class="p-4 flex flex-col flex-1 max-w-md mx-auto w-full space-y-4">
+            
+            <div class="w-full bg-slate-900/80 border border-slate-800 rounded-xl p-2.5 text-center flex justify-between items-center px-4">
+                <span class="text-xs text-amber-400 font-bold">🔥 Страна дня: Россия • мифик x2</span>
+                <span class="text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded font-bold">БОНУС</span>
+            </div>
+
+            <div class="text-center text-xs text-slate-400 pt-1">Сгенерируйте уникальный госавтономер</div>
+
+            <!-- НОМЕРНОЙ ЗНАК С ГРАФИЧЕСКИМ SVG ФЛАГОМ -->
+            <div class="w-full flex justify-center my-2">
+                <div id="plate-box" class="relative bg-white text-black border-4 rounded-xl shadow-2xl w-full max-w-[340px] h-28 flex items-center justify-between px-3 overflow-hidden transition-all duration-300 glow-gray">
+                    
+                    <!-- БУКВЫ И ЦИФРЫ (СЛЕВА) -->
+                    <div class="flex-1 text-center font-plate font-black text-3xl tracking-wider overflow-hidden">
+                        <span id="plate-text">А 777 АА</span>
+                    </div>
+
+                    <!-- ПРАВАЯ ЧАСТЬ (РЕГИОН + SVG ФЛАГ) -->
+                    <div class="border-l-2 border-slate-300 pl-3 flex flex-col items-center justify-center min-w-[70px]">
+                        <span id="plate-region" class="text-2xl font-plate font-black leading-none text-slate-900">777</span>
+                        <div class="flex items-center gap-1.5 mt-1">
+                            <span id="plate-code-text" class="text-[9px] font-bold tracking-widest text-slate-800">RUS</span>
+                            <div id="svg-flag-box" class="w-5 h-3.5 rounded-sm overflow-hidden border border-slate-400 shadow-sm flex items-center justify-center">
+                                <!-- Динамический векторный флаг -->
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Инфо блока стоимости при выпадении -->
+            <div id="info-box" class="text-center my-1 hidden glass-panel p-3 rounded-xl w-full border border-slate-800">
+                <p id="res-title" class="text-xs font-bold text-indigo-400 uppercase tracking-widest"></p>
+                <p class="text-xs text-slate-300 mt-1">ОЦЕНКА: <span id="res-val" class="text-emerald-400 font-black text-sm">0</span> ₽</p>
+            </div>
+
+            <!-- СЕЛЕКТОР СТРАНЫ И РЕГИОНА С ДИНАМИЧЕСКОЙ ЦЕНОЙ -->
+            <div class="w-full space-y-3 mt-auto pt-4">
+                <div class="flex gap-2">
+                    <select id="country-select" onchange="onCountryChange()" class="bg-slate-800/90 border border-slate-700/80 rounded-xl p-3 text-xs font-bold text-white focus:outline-none flex-1">
+                        <option value="ru">🇷🇺 Россия</option>
+                        <option value="ua">🇺🇦 Украина</option>
+                        <option value="by">🇧🇾 Беларусь</option>
+                    </select>
+
+                    <select id="region-select" onchange="calculateSpinPrice()" class="bg-slate-800/90 border border-slate-700/80 rounded-xl p-3 text-xs font-bold text-white focus:outline-none flex-1">
+                        <!-- Динамически заполняется -->
+                    </select>
+                </div>
+
+                <!-- КНОПКА КРУТКИ С ЦЕНОЙ -->
+                <button onclick="spin()" id="spin-btn" class="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 text-slate-950 font-black py-4 rounded-xl shadow-lg transition flex items-center justify-between px-6 active:scale-[0.98]">
+                    <span>🎰 КРУТИТЬ НОМЕР</span>
+                    <span id="spin-price-badge" class="bg-slate-950/20 text-slate-950 border border-slate-950/30 px-3 py-1 rounded-lg text-xs font-black">1 000 ₽</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- МОДАЛЬНОЕ ОКНО ДЛЯ РЕДКИХ НОМЕРОВ (ПРОДАТЬ ИЛИ ОСТАВИТЬ) -->
+        <div id="rare-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+            <div class="glass-panel p-6 rounded-2xl max-w-sm w-full text-center space-y-4 border border-amber-500/50 shadow-2xl">
+                <div class="text-3xl">🔥</div>
+                <h3 class="text-lg font-black text-amber-400" id="modal-rarity-title">ВЫПАЛ ЛЕГЕНДАРНЫЙ НОМЕР!</h3>
+                <p class="text-xs text-slate-300">Вы выбили эксклюзивный госномер <b id="modal-plate-name" class="text-white"></b>!</p>
+                <div class="bg-slate-900/90 p-3 rounded-xl border border-slate-800">
+                    <span class="text-xs text-slate-400">Рыночная цена:</span>
+                    <div id="modal-plate-price" class="text-lg font-black text-emerald-400">250 000 ₽</div>
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button onclick="modalAction('sell')" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-xs transition">
+                        💵 Продать сразу
+                    </button>
+                    <button onclick="modalAction('keep')" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl text-xs transition">
+                        🚗 В гараж
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ЭКРАН 2: ПРОФИЛЬ / МЕНЮ -->
+        <div id="view-profile" class="p-4 hidden flex-col flex-1 max-w-md mx-auto w-full space-y-4">
+            <button onclick="showView('slots')" class="text-xs text-indigo-400 font-bold flex items-center gap-1 mb-1">
+                ← Назад к крутке
+            </button>
+
             <div class="glass-panel p-5 rounded-2xl border border-slate-800 flex items-center justify-between">
                 <div class="flex items-center gap-3">
                     <div class="w-12 h-12 bg-indigo-600/30 border border-indigo-500/50 rounded-2xl flex items-center justify-center text-xl text-indigo-300 font-bold">
@@ -180,30 +288,20 @@ def get_webapp():
                     </div>
                     <div>
                         <div class="flex items-center gap-2">
-                            <h2 class="text-sm font-bold text-white">Агент Мегаполиса</h2>
-                            <!-- Бейдж администратора, появится если ID совпадет -->
-                            <span id="admin-badge" class="hidden bg-rose-600 text-white text-[9px] font-black px-2 py-0.5 rounded shadow">⚡ АДМИН</span>
+                            <h2 class="text-sm font-bold text-white">Коллекционер</h2>
+                            <span id="admin-status-badge" class="hidden bg-rose-600 text-white text-[9px] font-black px-2 py-0.5 rounded shadow tracking-wider">⚡ СТАТУС: АДМИН</span>
                         </div>
                         <p class="text-[11px] text-slate-400">ID: <span id="user-tg-id">7271568260</span></p>
                     </div>
                 </div>
-                <div class="text-right">
-                    <span class="text-xs text-amber-400 font-bold">⭐ Ур. 1</span>
-                </div>
             </div>
 
-            <!-- ГЛАВНОЕ МЕНЮ КНОПОК -->
+            <!-- МЕНЮ КНОПОК ХАБА -->
             <div class="grid grid-cols-2 gap-3">
-                <button onclick="showView('slots')" class="glass-panel p-4 rounded-2xl border border-indigo-500/30 bg-indigo-950/20 flex flex-col items-center justify-center gap-2 hover:border-indigo-400 transition active:scale-95">
-                    <span class="text-3xl">🎰</span>
-                    <span class="text-xs font-bold text-white">Крутить Слоты</span>
-                    <span class="text-[10px] text-indigo-300">Открыть рулетку</span>
-                </button>
-                
                 <button onclick="showView('garage')" class="glass-panel p-4 rounded-2xl border border-slate-800 flex flex-col items-center justify-center gap-2 hover:border-slate-600 transition active:scale-95">
                     <span class="text-3xl">🚗</span>
-                    <span class="text-xs font-bold text-white">Гараж</span>
-                    <span class="text-[10px] text-slate-400"><span id="menu-garage-count">0</span> номеров</span>
+                    <span class="text-xs font-bold text-white">Гараж номеров</span>
+                    <span class="text-[10px] text-slate-400"><span id="menu-garage-count">0</span> штук</span>
                 </button>
 
                 <button onclick="showView('quests')" class="glass-panel p-4 rounded-2xl border border-slate-800 flex flex-col items-center justify-center gap-2 hover:border-slate-600 transition active:scale-95">
@@ -217,59 +315,18 @@ def get_webapp():
                     <span class="text-xs font-bold text-white">Биржа</span>
                     <span class="text-[10px] text-emerald-400">Аукцион</span>
                 </button>
-            </div>
 
-            <!-- Админ-панель кнопка (скрыта по умолчанию) -->
-            <button id="admin-menu-btn" onclick="showView('admin')" class="hidden w-full bg-rose-600/20 border border-rose-500/50 text-rose-300 font-bold py-3 rounded-xl text-xs transition flex items-center justify-center gap-2">
-                👑 Терминал Администратора
-            </button>
-        </div>
-
-        <!-- ЭКРАН 2: СЛОТЫ И КРУТКА -->
-        <div id="view-slots" class="p-4 hidden flex-col flex-1 max-w-md mx-auto w-full space-y-4">
-            <button onclick="showView('profile')" class="text-xs text-indigo-400 font-bold flex items-center gap-1 mb-1">
-                ← Назад в профиль
-            </button>
-
-            <div class="w-full bg-slate-900/80 border border-slate-800 rounded-xl p-2.5 text-center">
-                <span class="text-xs text-amber-400 font-bold">🔥 Страна дня: Россия • мифик x2</span>
-            </div>
-
-            <div class="text-center text-xs text-slate-400 pt-2">Крутите реальный госномер</div>
-
-            <!-- НОМЕРНОЙ ЗНАК КАК В ЖИЗНИ -->
-            <div class="w-full flex justify-center my-3">
-                <div id="plate-box" class="relative bg-white text-black border-4 rounded-xl shadow-2xl w-full max-w-[340px] h-28 flex items-center justify-between px-3 overflow-hidden transition-all duration-300 glow-gray">
-                    <div class="flex-1 text-center font-plate font-black text-3xl tracking-wider overflow-hidden">
-                        <span id="plate-text">А 777 АА</span>
-                    </div>
-                    <div class="border-l-2 border-slate-300 pl-3 flex flex-col items-center justify-center min-w-[70px]">
-                        <span id="plate-region" class="text-2xl font-plate font-black leading-none text-slate-900">777</span>
-                        <div class="flex items-center gap-1 mt-1">
-                            <span id="plate-code-text" class="text-[10px] font-bold tracking-widest text-slate-800">RUS</span>
-                            <span id="svg-flag" class="text-sm">🇷🇺</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="info-box" class="text-center text-xs text-amber-400 hidden font-bold">
-                🎉 Поздравляем! Номер добавлен в гараж!
-            </div>
-
-            <div class="w-full space-y-3 mt-auto pt-6">
-                <div class="flex gap-2">
-                    <select id="country-select" class="w-full bg-slate-800/90 border border-slate-700/80 rounded-xl p-3.5 text-xs font-semibold text-white focus:outline-none">
-                        <option value="ru">🇷🇺 Россия (ГОСТ)</option>
-                        <option value="ua">🇺🇦 Украина (UA-NET)</option>
-                        <option value="by">🇧🇾 Беларусь (BY-GRID)</option>
-                    </select>
-                </div>
-
-                <button onclick="spin()" class="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 text-slate-950 font-black py-4 rounded-xl shadow-lg transition flex items-center justify-center gap-2 active:scale-[0.98]">
-                    <span>🎰 Крутить слот (1 000 ₽)</span>
+                <button onclick="showView('slots')" class="glass-panel p-4 rounded-2xl border border-indigo-500/30 bg-indigo-950/20 flex flex-col items-center justify-center gap-2 hover:border-indigo-400 transition active:scale-95">
+                    <span class="text-3xl">🎰</span>
+                    <span class="text-xs font-bold text-white">Крутить Слоты</span>
+                    <span class="text-[10px] text-indigo-300">Перейти</span>
                 </button>
             </div>
+
+            <!-- КНОПКА АДМИНКИ -->
+            <button id="admin-menu-btn" onclick="showView('admin')" class="hidden w-full bg-rose-600/20 border border-rose-500/50 text-rose-300 font-bold py-3.5 rounded-xl text-xs transition flex items-center justify-center gap-2">
+                👑 Терминал Администратора
+            </button>
         </div>
 
         <!-- ЭКРАН 3: ГАРАЖ -->
@@ -277,33 +334,19 @@ def get_webapp():
             <button onclick="showView('profile')" class="text-xs text-indigo-400 font-bold flex items-center gap-1 mb-1">
                 ← Назад в профиль
             </button>
-            <h2 class="text-sm font-bold text-slate-200">Гараж номеров</h2>
+            <h2 class="text-sm font-bold text-slate-200">Гараж госномеров</h2>
             <div id="garage-list" class="space-y-3">
-                <div class="text-center text-slate-500 py-12 text-xs">Гараж пуст. Крутите слоты!</div>
+                <div class="text-center text-slate-500 py-12 text-xs">Гараж пуст. Начните крутить номера!</div>
             </div>
         </div>
 
-        <!-- ЭКРАН 4: КВЕСТЫ -->
+        <!-- ЭКРАН 4: ИНТЕРАКТИВНЫЕ КВЕСТЫ -->
         <div id="view-quests" class="p-4 hidden flex-col flex-1 max-w-md mx-auto w-full space-y-3">
             <button onclick="showView('profile')" class="text-xs text-indigo-400 font-bold flex items-center gap-1 mb-1">
                 ← Назад в профиль
             </button>
-            <h2 class="text-sm font-bold text-slate-200 mb-2">🎯 Путь новичка (0/6)</h2>
-            
-            <div class="glass-panel p-3.5 rounded-xl border border-slate-800 flex justify-between items-center">
-                <div>
-                    <div class="text-xs font-bold text-slate-200">Сделать первую крутку слота</div>
-                    <div class="text-[10px] text-emerald-400">+50 000 ₽ на баланс</div>
-                </div>
-                <button class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-3 py-1.5 rounded-lg text-xs">Забрать</button>
-            </div>
-            <div class="glass-panel p-3.5 rounded-xl border border-slate-800 flex justify-between items-center">
-                <div>
-                    <div class="text-xs font-bold text-slate-200">Выбить редкий номер</div>
-                    <div class="text-[10px] text-emerald-400">+150 000 ₽</div>
-                </div>
-                <span class="text-xs text-slate-500 font-bold">0/1</span>
-            </div>
+            <h2 class="text-sm font-bold text-slate-200 mb-2">🎯 Путь новичка</h2>
+            <div id="quests-list" class="space-y-3"></div>
         </div>
 
         <!-- ЭКРАН 5: БИРЖА -->
@@ -315,46 +358,67 @@ def get_webapp():
             <div id="market-list" class="space-y-3"></div>
         </div>
 
-        <!-- ЭКРАН 6: АДМИН-ПАНЕЛЬ -->
+        <!-- ЭКРАН 6: АДМИН-ПАНЕЛЬ ПО ID -->
         <div id="view-admin" class="p-4 hidden flex-col flex-1 max-w-md mx-auto w-full space-y-3">
             <button onclick="showView('profile')" class="text-xs text-indigo-400 font-bold flex items-center gap-1 mb-1">
                 ← Назад в профиль
             </button>
             <div class="glass-panel p-5 rounded-2xl border border-rose-500/40 space-y-3">
-                <div class="flex items-center gap-2">
-                    <span class="text-xl">👑</span>
-                    <h2 class="text-sm font-black text-rose-400">ТЕРМИНАЛ АДМИНИСТРАТОРА</h2>
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xl">👑</span>
+                        <h2 class="text-sm font-black text-rose-400">ТЕРМИНАЛ АДМИНИСТРАТОРА</h2>
+                    </div>
+                    <span class="bg-rose-600/30 border border-rose-500 text-rose-300 text-[9px] font-black px-2 py-0.5 rounded">⚡ АДМИН</span>
                 </div>
-                <div>
-                    <label class="block text-[10px] text-slate-400 mb-1">Telegram ID игрока:</label>
-                    <input id="admin-target-id" type="number" value="7271568260" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-white text-xs">
-                </div>
-                <div>
-                    <label class="block text-[10px] text-slate-400 mb-1">Сумма рублей (₽):</label>
-                    <input id="admin-money-amount" type="number" value="500000" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-white text-xs">
-                </div>
-                <button onclick="adminGiveMoney()" class="w-full bg-emerald-600/30 border border-emerald-500/60 text-emerald-300 font-bold py-3 rounded-xl text-xs transition">
-                    Начислить баланс
-                </button>
+                <p class="text-xs text-slate-400">Управление игроками для ID: <code class="text-rose-300 font-bold">__ADMIN_ID__</code></p>
+                
+                <div class="space-y-3 pt-2">
+                    <div>
+                        <label class="block text-[10px] text-slate-400 mb-1">Telegram ID игрока:</label>
+                        <input id="admin-target-id" type="number" value="7271568260" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-white text-xs">
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-[10px] text-slate-400 mb-1">Сумма рублей (₽):</label>
+                            <input id="admin-money-amount" type="number" value="500000" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-white text-xs">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] text-slate-400 mb-1">Опыт (EXP):</label>
+                            <input id="admin-exp-amount" type="number" value="100" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-white text-xs">
+                        </div>
+                    </div>
 
-                <hr class="border-slate-800">
+                    <div class="flex gap-2">
+                        <button onclick="adminGiveMoney()" class="flex-1 bg-emerald-600/30 border border-emerald-500/60 text-emerald-300 font-bold py-2.5 rounded-xl text-xs transition">
+                            + Рубли
+                        </button>
+                        <button onclick="adminGiveExp()" class="flex-1 bg-indigo-600/30 border border-indigo-500/60 text-indigo-300 font-bold py-2.5 rounded-xl text-xs transition">
+                            + Опыт (EXP)
+                        </button>
+                    </div>
 
-                <div>
-                    <label class="block text-[10px] text-slate-400 mb-1">Кастомный номер:</label>
-                    <input id="admin-plate-num" type="text" placeholder="Х 777 ХХ" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-white text-xs mb-2">
-                    <label class="block text-[10px] text-slate-400 mb-1">Редкость:</label>
-                    <select id="admin-plate-rarity" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-white text-xs mb-3">
-                        <option value="обычный">Обычный (Серый)</option>
-                        <option value="редкий">Редкий (Зеленый)</option>
-                        <option value="сверхредкий">Сверхредкий (Синий)</option>
-                        <option value="легендарный">Легендарный (Желтый)</option>
-                        <option value="мифический">Мифический (Красный)</option>
-                        <option value="мистический">Мистический (Пурпурный)</option>
-                    </select>
+                    <hr class="border-slate-800 my-2">
+
+                    <div>
+                        <label class="block text-[10px] text-slate-400 mb-1">Кастомный номерной знак:</label>
+                        <input id="admin-plate-num" type="text" placeholder="А 777 АА 777" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-white text-xs mb-2">
+                        
+                        <label class="block text-[10px] text-slate-400 mb-1">Редкость:</label>
+                        <select id="admin-plate-rarity" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-white text-xs mb-3">
+                            <option value="обычный">Обычный (Серый)</option>
+                            <option value="редкий">Редкий (Зеленый)</option>
+                            <option value="сверхредкий">Сверхредкий (Синий)</option>
+                            <option value="легендарный">Легендарный (Желтый)</option>
+                            <option value="мифический">Мифический (Красный)</option>
+                            <option value="мистический">Мистический (Пурпурный)</option>
+                        </select>
+                    </div>
+                    <button onclick="adminGiveCustomPlate()" class="w-full bg-purple-600/30 border border-purple-500/60 text-purple-300 font-bold py-3 rounded-xl text-xs transition">
+                        Выдать номер и очистить поля
+                    </button>
                 </div>
-                <button onclick="adminGiveCustomPlate()" class="w-full bg-purple-600/30 border border-purple-500/60 text-purple-300 font-bold py-3 rounded-xl text-xs transition">
-                    Выдать номер в гараж
-                </button>
             </div>
         </div>
 
@@ -368,28 +432,88 @@ def get_webapp():
             document.getElementById('user-tg-id').innerText = currentUserTgId;
 
             if (currentUserTgId === ADMIN_ID) {
-                document.getElementById('admin-badge').classList.remove('hidden');
+                document.getElementById('admin-status-badge').classList.remove('hidden');
                 document.getElementById('admin-menu-btn').classList.remove('hidden');
             }
 
             let state = {
                 balance: 1250000,
                 level: 1,
-                energy: 0,
+                exp: 0,
                 garage: [],
+                pendingRarePlate: null,
+                quests: [
+                    { id: 1, title: "Первая крутка", rewardMoney: 50000, rewardExp: 30, done: false },
+                    { id: 2, title: "Выбить редкий номер", rewardMoney: 150000, rewardExp: 50, done: false },
+                    { id: 3, title: "Продать номер на бирже", rewardMoney: 200000, rewardExp: 70, done: false }
+                ],
                 market: [
                     { id: 1, number: "А 777 АА", region: "777", title: "🔥 МИФИЧЕСКИЙ НОМЕР", price: 600000, seller: "CyberLord", color: "red" },
                     { id: 2, number: "В 111 ВВ", region: "78", title: "⚡ ЛЕГЕНДАРНЫЙ СЛОТ", price: 250000, seller: "Москвич", color: "yellow" }
                 ]
             };
 
+            const RU_REGIONS = ['77', '99', '177', '199', '777', '799', '78', '98', '178', '198', '50', '90', '150', '161', '125'];
+            const UA_REGIONS = ['AA', 'KA', 'BC', 'HC', 'AE', 'BH', 'BI', 'AX', 'AP', 'CB'];
+            const BY_REGIONS = ['1', '2', '3', '4', '5', '6', '7'];
+
+            function onCountryChange() {
+                let country = document.getElementById('country-select').value;
+                let regionSelect = document.getElementById('region-select');
+                regionSelect.innerHTML = '';
+
+                let list = country === 'ru' ? RU_REGIONS : (country === 'ua' ? UA_REGIONS : BY_REGIONS);
+                
+                let defaultOpt = document.createElement('option');
+                defaultOpt.value = "auto";
+                defaultOpt.innerText = "🎲 Любой регион";
+                regionSelect.appendChild(defaultOpt);
+
+                list.forEach(r => {
+                    let opt = document.createElement('option');
+                    opt.value = r;
+                    opt.innerText = `Регион ${r}`;
+                    regionSelect.appendChild(opt);
+                });
+
+                calculateSpinPrice();
+                updatePlateVisual(country, 'А 777 АА', list[0], 'yellow');
+            }
+
+            function calculateSpinPrice() {
+                let reg = document.getElementById('region-select').value;
+                let basePrice = 1000;
+                if (['777', '799', '199', '77', 'AA', 'KA', '7'].includes(reg)) {
+                    basePrice = 2500;
+                }
+                document.getElementById('spin-price-badge').innerText = basePrice.toLocaleString('ru-RU') + ' ₽';
+                return basePrice;
+            }
+
+            function addExp(amount) {
+                state.exp += amount;
+                if (state.exp >= 100) {
+                    state.level += 1;
+                    state.exp -= 100;
+                    state.balance += 200000; // Награда за уровень
+                    alert(`🎉 ПОЗДРАВЛЯЕМ! Новый Уровень ${state.level}! Получено +200 000 ₽!`);
+                }
+                updateUI();
+            }
+
             function updateUI() {
-                document.getElementById('balance').innerText = state.balance.toLocaleString('ru-RU') + ' ₽';
+                let balEl = document.getElementById('balance');
+                balEl.innerText = state.balance.toLocaleString('ru-RU') + ' ₽';
+                balEl.classList.add('balance-pop');
+                setTimeout(() => balEl.classList.remove('balance-pop'), 400);
+
                 document.getElementById('level').innerText = state.level;
-                document.getElementById('energy').innerText = state.energy;
+                document.getElementById('exp').innerText = state.exp;
                 document.getElementById('menu-garage-count').innerText = state.garage.length;
+                
                 renderGarage();
                 renderMarket();
+                renderQuests();
             }
 
             function showView(viewName) {
@@ -404,7 +528,7 @@ def get_webapp():
             function updatePlateVisual(country, numberText, regionText, colorClass) {
                 let plateBox = document.getElementById('plate-box');
                 let codeText = document.getElementById('plate-code-text');
-                let svgFlag = document.getElementById('svg-flag');
+                let svgBox = document.getElementById('svg-flag-box');
                 
                 plateBox.className = `relative bg-white text-black border-4 rounded-xl shadow-2xl w-full max-w-[340px] h-28 flex items-center justify-between px-3 overflow-hidden transition-all duration-300 glow-${colorClass}`;
                 document.getElementById('plate-text').innerText = numberText;
@@ -412,62 +536,98 @@ def get_webapp():
 
                 if (country === 'ru') {
                     codeText.innerText = 'RUS';
-                    svgFlag.innerText = '🇷🇺';
+                    svgBox.innerHTML = '<svg class="w-full h-full" viewBox="0 0 36 24"><rect width="36" height="8" fill="#fff"/><rect y="8" width="36" height="8" fill="#0039a6"/><rect y="16" width="36" height="8" fill="#d52b1e"/></svg>';
                 } else if (country === 'ua') {
                     codeText.innerText = 'UA';
-                    svgFlag.innerText = '🇺🇦';
+                    svgBox.innerHTML = '<svg class="w-full h-full" viewBox="0 0 36 24"><rect width="36" height="12" fill="#0057b7"/><rect y="12" width="36" height="12" fill="#ffd700"/></svg>';
                 } else if (country === 'by') {
                     codeText.innerText = 'BY';
-                    svgFlag.innerText = '🇧🇾';
+                    svgBox.innerHTML = '<svg class="w-full h-full" viewBox="0 0 36 24"><rect width="36" height="15" fill="#d52b1e"/><rect y="15" width="36" height="9" fill="#008751"/><rect width="10" height="24" fill="#fff"/></svg>';
                 }
             }
 
-            document.getElementById('country-select').addEventListener('change', (e) => {
-                let c = e.target.value;
-                if (c === 'ru') updatePlateVisual('ru', 'А 777 АА', '777', 'yellow');
-                else if (c === 'ua') updatePlateVisual('ua', 'AA 7777', 'UA', 'yellow');
-                else if (c === 'by') updatePlateVisual('by', '7777 AB', '7', 'blue');
-            });
-
             async function spin() {
-                if (state.balance < 1000) {
+                let price = calculateSpinPrice();
+                if (state.balance < price) {
                     alert('Недостаточно рублей!');
                     return;
                 }
-                state.balance -= 1000;
+                state.balance -= price;
                 updateUI();
 
                 let country = document.getElementById('country-select').value;
+                let region = document.getElementById('region-select').value;
                 let infoBox = document.getElementById('info-box');
                 infoBox.classList.add('hidden');
 
-                // Анимация роста и перебора цифр
+                // Анимация перебора
                 let counter = 0;
                 let interval = setInterval(() => {
                     let randNum = Math.floor(100 + Math.random() * 900);
                     updatePlateVisual(country, `Х ${randNum} ХХ`, '99', 'gray');
                     counter++;
                     if (counter > 12) clearInterval(interval);
-                }, 45);
+                }, 40);
 
-                let response = await fetch(`/api/spin?country=${country}&tier=normal`);
+                let response = await fetch(`/api/spin?country=${country}&region=${region}&tier=normal`);
                 if (response.ok) {
                     let data = await response.json();
                     setTimeout(() => {
                         updatePlateVisual(country, data.number, data.region, data.color);
+                        
+                        // Анимация нарастания цены
+                        document.getElementById('res-title').innerText = data.title;
                         infoBox.classList.remove('hidden');
+                        
+                        let startVal = 0;
+                        let valInterval = setInterval(() => {
+                            startVal += Math.round(data.value / 10);
+                            if (startVal >= data.value) {
+                                startVal = data.value;
+                                clearInterval(valInterval);
+                            }
+                            document.getElementById('res-val').innerText = startVal.toLocaleString('ru-RU');
+                        }, 25);
 
-                        state.garage.unshift(data);
-                        updateUI();
+                        addExp(15); // Начисление опыта за крутку
+                        state.quests[0].done = true; // Выполнен квест на первую крутку
+
+                        // Если высокая редкость - модалка с выбором
+                        if (['yellow', 'red', 'purple'].includes(data.color)) {
+                            state.pendingRarePlate = data;
+                            document.getElementById('modal-rarity-title').innerText = `ВЫПАЛ ${data.title}!`;
+                            document.getElementById('modal-plate-name').innerText = `${data.number} | ${data.region}`;
+                            document.getElementById('modal-plate-price').innerText = `${data.value.toLocaleString('ru-RU')} ₽`;
+                            document.getElementById('rare-modal').classList.remove('hidden');
+                        } else {
+                            state.garage.unshift(data);
+                            updateUI();
+                        }
+
                         tg.HapticFeedback?.notificationOccurred('success');
                     }, 600);
                 }
             }
 
+            function modalAction(action) {
+                document.getElementById('rare-modal').classList.add('hidden');
+                if (!state.pendingRarePlate) return;
+
+                if (action === 'sell') {
+                    state.balance += state.pendingRarePlate.value;
+                    alert(`💵 Продано! +${state.pendingRarePlate.value.toLocaleString('ru-RU')} ₽ на баланс!`);
+                } else {
+                    state.garage.unshift(state.pendingRarePlate);
+                    alert('🚗 Номер сохранен в ваш гараж!');
+                }
+                state.pendingRarePlate = null;
+                updateUI();
+            }
+
             function renderGarage() {
                 let list = document.getElementById('garage-list');
                 if (state.garage.length === 0) {
-                    list.innerHTML = '<div class="text-center text-slate-500 py-12 text-xs">Гараж пуст. Крутите слоты!</div>';
+                    list.innerHTML = '<div class="text-center text-slate-500 py-12 text-xs">Гараж пуст. Начните крутить номера!</div>';
                     return;
                 }
                 list.innerHTML = state.garage.map((item, index) => `
@@ -500,11 +660,12 @@ def get_webapp():
                     number: item.number,
                     region: item.region,
                     title: item.title,
-                    price: Math.round(item.value * 1.25),
+                    price: Math.round(item.value * 1.3),
                     seller: "Вы",
                     color: item.color
                 });
                 state.garage.splice(index, 1);
+                state.quests[2].done = true;
                 updateUI();
                 alert("Номер успешно выставлен на биржу!");
             }
@@ -539,17 +700,50 @@ def get_webapp():
                 tg.HapticFeedback?.notificationOccurred('success');
             }
 
+            function renderQuests() {
+                let list = document.getElementById('quests-list');
+                list.innerHTML = state.quests.map((q, idx) => `
+                    <div class="glass-panel p-3.5 rounded-xl border border-slate-800 flex justify-between items-center">
+                        <div>
+                            <div class="text-xs font-bold text-slate-200">${q.title}</div>
+                            <div class="text-[10px] text-emerald-400">+${q.rewardMoney.toLocaleString('ru-RU')} ₽ • +${q.rewardExp} EXP</div>
+                        </div>
+                        ${q.done ? `<button onclick="claimQuest(${idx})" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3 py-1.5 rounded-lg text-xs">Забрать</button>` : `<span class="text-xs text-slate-500 font-bold">В процессе</span>`}
+                    </div>
+                `).join('');
+            }
+
+            function claimQuest(idx) {
+                let q = state.quests[idx];
+                state.balance += q.rewardMoney;
+                addExp(q.rewardExp);
+                state.quests.splice(idx, 1);
+                updateUI();
+                alert(`🎯 Награда получена: +${q.rewardMoney.toLocaleString('ru-RU')} ₽ и +${q.rewardExp} EXP!`);
+            }
+
+            // АДМИН-ФУНКЦИИ
             function adminGiveMoney() {
                 let targetId = document.getElementById('admin-target-id').value;
                 let amount = parseInt(document.getElementById('admin-money-amount').value) || 0;
                 state.balance += amount;
                 updateUI();
-                alert(`Админ: начислено ${amount.toLocaleString('ru-RU')} ₽ для ID ${targetId}!`);
+                alert(`⚡ [АДМИН] Успешно начислено +${amount.toLocaleString('ru-RU')} ₽ для ID ${targetId}!`);
+            }
+
+            function adminGiveExp() {
+                let targetId = document.getElementById('admin-target-id').value;
+                let amount = parseInt(document.getElementById('admin-exp-amount').value) || 0;
+                addExp(amount);
+                alert(`⚡ [АДМИН] Успешно начислено +${amount} EXP для ID ${targetId}!`);
             }
 
             function adminGiveCustomPlate() {
-                let num = document.getElementById('admin-plate-num').value.trim() || "А 777 АА";
-                let rarity = document.getElementById('admin-plate-rarity').value;
+                let numInput = document.getElementById('admin-plate-num');
+                let rarityInput = document.getElementById('admin-plate-rarity');
+                
+                let num = numInput.value.trim() || "А 777 АА";
+                let rarity = rarityInput.value;
                 
                 let colorMap = { "обычный": "gray", "редкий": "green", "сверхредкий": "blue", "легендарный": "yellow", "мифический": "red", "мистический": "purple" };
                 let color = colorMap[rarity] || "blue";
@@ -558,15 +752,20 @@ def get_webapp():
                     number: num,
                     region: "777",
                     title: `👑 ЭКСКЛЮЗИВ (${rarity.toUpperCase()})`,
-                    value: rarity === 'мистический' ? 1000000 : 300000,
+                    value: rarity === 'мистический' ? 1500000 : 400000,
                     color: color
                 });
+                
+                // Очищаем поля после выдачи для удобства следующего ввода
+                numInput.value = '';
+                rarityInput.selectedIndex = 0;
+
                 updateUI();
-                alert(`Номер "${num}" (${rarity}) успешно выдан в ваш гараж!`);
+                alert(`⚡ [АДМИН] Номер "${num}" (${rarity}) успешно выдан в гараж! Поля очищены.`);
             }
 
+            onCountryChange();
             updateUI();
-            updatePlateVisual('ru', 'А 777 АА', '777', 'yellow');
         </script>
     </body>
     </html>
