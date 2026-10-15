@@ -50,7 +50,7 @@ BY_REGIONS = ['1', '2', '3', '4', '5', '6', '7']
 def spin_plates(country: str, tier: str = "normal"):
     roll = random.random()
     
-    # 6 уровней редкости: Обычный -> Редкий -> Сверхредкий -> Легендарный -> Мифический -> Мистический
+    # 6 уровней редкости с нарастающей стоимостью
     if tier == "elite":
         if roll < 0.05:
             rarity, color, title, val_mult = "мистический", "purple", "✨ МИСТИЧЕСКИЙ КВАНТ", 500000
@@ -105,7 +105,7 @@ def spin_plates(country: str, tier: str = "normal"):
 
 @app.get("/", response_class=HTMLResponse)
 def get_webapp():
-    return f"""
+    html_content = """
     <!DOCTYPE html>
     <html lang="ru">
     <head>
@@ -116,40 +116,38 @@ def get_webapp():
         <script src="https://cdn.tailwindcss.com"></script>
         <style>
             @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@600;700&display=swap');
-            body {{
+            body {
                 font-family: 'Rajdhani', sans-serif;
                 background-color: #030712;
                 color: #f3f4f6;
-            }}
-            .font-cyber {{
+            }
+            .font-cyber {
                 font-family: 'Orbitron', sans-serif;
-            }}
-            .glass-cyber {{
+            }
+            .glass-cyber {
                 background: rgba(10, 15, 30, 0.85);
                 backdrop-filter: blur(16px);
                 border: 1px solid rgba(0, 240, 255, 0.15);
                 box-shadow: 0 0 20px rgba(0, 240, 255, 0.05);
-            }}
+            }
 
-            /* Неоновые анимации для 6 уровней редкости */
-            @keyframes grayGlow {{ 0%, 100% {{ border-color: #4b5563; box-shadow: 0 0 5px rgba(156,163,175,0.2); }} 50% {{ border-color: #9ca3af; box-shadow: 0 0 15px rgba(156,163,175,0.4); }} }}
-            @keyframes greenGlow {{ 0%, 100% {{ border-color: #10b981; box-shadow: 0 0 10px rgba(16,185,129,0.4); }} 50% {{ border-color: #34d399; box-shadow: 0 0 25px rgba(16,185,129,0.8); }} }}
-            @keyframes blueGlow {{ 0%, 100% {{ border-color: #3b82f6; box-shadow: 0 0 15px rgba(59,130,246,0.5); }} 50% {{ border-color: #60a5fa; box-shadow: 0 0 30px rgba(59,130,246,0.9); }} }}
-            @keyframes yellowGlow {{ 0%, 100% {{ border-color: #eab308; box-shadow: 0 0 20px rgba(234,179,8,0.6); }} 50% {{ border-color: #facc15; box-shadow: 0 0 40px rgba(234,179,8,1); }} }}
-            @keyframes redGlow {{ 0%, 100% {{ border-color: #ef4444; box-shadow: 0 0 25px rgba(239,68,68,0.7); }} 50% {{ border-color: #f87171; box-shadow: 0 0 45px rgba(239,68,68,1); }} }}
-            @keyframes purpleGlow {{ 0%, 100% {{ border-color: #a855f7; box-shadow: 0 0 30px rgba(168,85,247,0.8); filter: hue-rotate(0deg); }} 50% {{ border-color: #ec4899; box-shadow: 0 0 60px rgba(236,72,153,1); filter: hue-rotate(90deg); }} }}
+            @keyframes grayGlow { 0%, 100% { border-color: #4b5563; box-shadow: 0 0 5px rgba(156,163,175,0.2); } 50% { border-color: #9ca3af; box-shadow: 0 0 15px rgba(156,163,175,0.4); } }
+            @keyframes greenGlow { 0%, 100% { border-color: #10b981; box-shadow: 0 0 10px rgba(16,185,129,0.4); } 50% { border-color: #34d399; box-shadow: 0 0 25px rgba(16,185,129,0.8); } }
+            @keyframes blueGlow { 0%, 100% { border-color: #3b82f6; box-shadow: 0 0 15px rgba(59,130,246,0.5); } 50% { border-color: #60a5fa; box-shadow: 0 0 30px rgba(59,130,246,0.9); } }
+            @keyframes yellowGlow { 0%, 100% { border-color: #eab308; box-shadow: 0 0 20px rgba(234,179,8,0.6); } 50% { border-color: #facc15; box-shadow: 0 0 40px rgba(234,179,8,1); } }
+            @keyframes redGlow { 0%, 100% { border-color: #ef4444; box-shadow: 0 0 25px rgba(239,68,68,0.7); } 50% { border-color: #f87171; box-shadow: 0 0 45px rgba(239,68,68,1); } }
+            @keyframes purpleGlow { 0%, 100% { border-color: #a855f7; box-shadow: 0 0 30px rgba(168,85,247,0.8); filter: hue-rotate(0deg); } 50% { border-color: #ec4899; box-shadow: 0 0 60px rgba(236,72,153,1); filter: hue-rotate(90deg); } }
 
-            .glow-gray {{ animation: grayGlow 3s infinite; }}
-            .glow-green {{ animation: greenGlow 2s infinite; }}
-            .glow-blue {{ animation: blueGlow 2s infinite; }}
-            .glow-yellow {{ animation: yellowGlow 1.5s infinite; }}
-            .glow-red {{ animation: redGlow 1s infinite; }}
-            .glow-purple {{ animation: purpleGlow 0.8s infinite; }}
+            .glow-gray { animation: grayGlow 3s infinite; }
+            .glow-green { animation: greenGlow 2s infinite; }
+            .glow-blue { animation: blueGlow 2s infinite; }
+            .glow-yellow { animation: yellowGlow 1.5s infinite; }
+            .glow-red { animation: redGlow 1s infinite; }
+            .glow-purple { animation: purpleGlow 0.8s infinite; }
         </style>
     </head>
     <body class="min-h-screen flex flex-col select-none pb-24 overflow-x-hidden">
         
-        <!-- ШАПКА -->
         <header class="glass-cyber p-4 flex justify-between items-center sticky top-0 z-50 border-b border-cyan-500/20">
             <div class="flex items-center gap-2 bg-cyan-950/40 border border-cyan-500/30 px-3 py-1.5 rounded-xl shadow-[0_0_15px_rgba(0,240,255,0.1)]">
                 <span class="text-cyan-400 font-bold">₽</span>
@@ -166,14 +164,12 @@ def get_webapp():
             </div>
         </header>
 
-        <!-- НАВИГАЦИЯ -->
         <nav class="flex border-b border-cyan-500/20 bg-slate-950/80 backdrop-blur-md sticky top-[65px] z-40">
             <button onclick="switchTab('game')" id="tab-game-btn" class="flex-1 py-3 text-center font-cyber text-xs tracking-widest text-cyan-400 border-b-2 border-cyan-400 transition">СЛОТЫ</button>
             <button onclick="switchTab('garage')" id="tab-garage-btn" class="flex-1 py-3 text-center font-cyber text-xs tracking-widest text-slate-400 transition">ГАРАЖ (<span id="garage-count">0</span>)</button>
             <button onclick="switchTab('market')" id="tab-market-btn" class="flex-1 py-3 text-center font-cyber text-xs tracking-widest text-slate-400 transition">БИРЖА</button>
         </nav>
 
-        <!-- ВКЛАДКА 1: СЛОТЫ -->
         <div id="tab-game" class="p-4 flex flex-col items-center flex-1 max-w-md mx-auto w-full">
             <div class="w-full mb-6">
                 <label class="block text-xs font-cyber text-cyan-400 mb-2 uppercase tracking-widest">СЕГМЕНТ СЕТИ:</label>
@@ -184,7 +180,6 @@ def get_webapp():
                 </select>
             </div>
 
-            <!-- НОМЕРНОЙ ЗНАК С ВЕКТОРНЫМ ФЛАГОМ -->
             <div class="w-full my-6 flex justify-center">
                 <div id="plate-box" class="relative bg-white text-black border-4 rounded-xl shadow-2xl w-full max-w-[340px] h-28 flex items-center justify-between px-3 overflow-hidden transition-all duration-300 glow-gray">
                     <div class="flex items-center gap-2">
@@ -220,7 +215,6 @@ def get_webapp():
             </div>
         </div>
 
-        <!-- ВКЛАДКА 2: ГАРАЖ -->
         <div id="tab-garage" class="p-4 hidden flex-1 max-w-md mx-auto w-full">
             <h2 class="text-sm font-cyber text-cyan-400 mb-4 tracking-wider">ВАШ КВАНТОВЫЙ ГАРАЖ</h2>
             <div id="garage-list" class="space-y-3">
@@ -228,21 +222,19 @@ def get_webapp():
             </div>
         </div>
 
-        <!-- ВКЛАДКА 3: БИРЖА -->
         <div id="tab-market" class="p-4 hidden flex-1 max-w-md mx-auto w-full">
             <h2 class="text-sm font-cyber text-cyan-400 mb-1 tracking-wider">ГЛОБАЛЬНАЯ КИБЕР-БИРЖА</h2>
             <p class="text-xs text-slate-400 mb-4">Торговля редкими номерами сетевых агентов.</p>
             <div id="market-list" class="space-y-3"></div>
         </div>
 
-        <!-- ВКЛАДКА 4: АДМИН-ПАНЕЛЬ -->
         <div id="tab-admin" class="p-4 hidden flex-1 max-w-md mx-auto w-full">
             <div class="glass-cyber p-5 rounded-2xl border border-rose-500/40 shadow-[0_0_30px_rgba(244,63,94,0.15)]">
                 <div class="flex items-center gap-2 mb-4">
                     <span class="text-xl">👑</span>
                     <h2 class="text-sm font-cyber font-black text-rose-400 tracking-wider">ТЕРМИНАЛ АДМИНИСТРАТОРА</h2>
                 </div>
-                <p class="text-xs text-slate-400 mb-4">Доступ открыт для ID: <code class="text-rose-300 font-bold">{ADMIN_TG_ID}</code></p>
+                <p class="text-xs text-slate-400 mb-4">Доступ открыт для ID: <code class="text-rose-300 font-bold">__ADMIN_ID__</code></p>
                 
                 <div class="space-y-4">
                     <div>
@@ -285,80 +277,80 @@ def get_webapp():
             let tg = window.Telegram.WebApp;
             tg.expand();
 
-            const ADMIN_ID = {ADMIN_TG_ID};
+            const ADMIN_ID = __ADMIN_ID__;
             let currentUserTgId = tg.initDataUnsafe?.user?.id || 7271568260;
 
-            if (currentUserTgId === ADMIN_ID) {{
+            if (currentUserTgId === ADMIN_ID) {
                 document.getElementById('admin-tab-btn').classList.remove('hidden');
-            }}
+            }
 
-            let state = {{
+            let state = {
                 balance: 50000,
                 level: 1,
                 garage: [],
                 market: [
-                    {{ id: 1, number: "Х777ХХ 777", title: "🔥 МИФИЧЕСКИЙ НОМЕР", price: 350000, seller: "CyberLord", rarity: "мифический", color: "red" }},
-                    {{ id: 2, number: "AA 7777 AA", title: "⚡ ЛЕГЕНДАРНЫЙ СЛОТ", price: 150000, seller: "KiyvNet", rarity: "легендарный", color: "yellow" }}
+                    { id: 1, number: "Х777ХХ 777", title: "🔥 МИФИЧЕСКИЙ НОМЕР", price: 350000, seller: "CyberLord", rarity: "мифический", color: "red" },
+                    { id: 2, number: "AA 7777 AA", title: "⚡ ЛЕГЕНДАРНЫЙ СЛОТ", price: 150000, seller: "KiyvNet", rarity: "легендарный", color: "yellow" }
                 ]
-            }};
+            };
 
-            function updateUI() {{
+            function updateUI() {
                 document.getElementById('balance').innerText = state.balance.toLocaleString('ru-RU');
                 document.getElementById('level').innerText = state.level;
                 document.getElementById('garage-count').innerText = state.garage.length;
                 renderGarage();
                 renderMarket();
-            }}
+            }
 
-            function switchTab(tab) {{
-                ['game', 'garage', 'market', 'admin'].forEach(t => {{
-                    let el = document.getElementById(`tab-${{t}}`);
-                    let btn = document.getElementById(`tab-${{t}}-btn`);
+            function switchTab(tab) {
+                ['game', 'garage', 'market', 'admin'].forEach(t => {
+                    let el = document.getElementById(`tab-${t}`);
+                    let btn = document.getElementById(`tab-${t}-btn`);
                     if (el) el.classList.add('hidden');
                     if (btn) btn.className = "flex-1 py-3 text-center font-cyber text-xs tracking-widest text-slate-400 transition";
-                }});
+                });
                 
-                document.getElementById(`tab-${{tab}}`).classList.remove('hidden');
-                let activeBtn = document.getElementById(`tab-${{tab}}-btn`);
+                document.getElementById(`tab-${tab}`).classList.remove('hidden');
+                let activeBtn = document.getElementById(`tab-${tab}-btn`);
                 if (activeBtn) activeBtn.className = "flex-1 py-3 text-center font-cyber text-xs tracking-widest text-cyan-400 border-b-2 border-cyan-400 transition";
-            }}
+            }
 
-            function updatePlateVisual(country, numberText, colorClass) {{
+            function updatePlateVisual(country, numberText, colorClass) {
                 let svgFlag = document.getElementById('svg-flag');
                 let codeSpan = document.getElementById('country-code');
                 let plateBox = document.getElementById('plate-box');
                 
-                plateBox.className = `relative bg-white text-black border-4 rounded-xl shadow-2xl w-full max-w-[340px] h-28 flex items-center justify-between px-3 overflow-hidden transition-all duration-300 glow-${{colorClass}}`;
+                plateBox.className = `relative bg-white text-black border-4 rounded-xl shadow-2xl w-full max-w-[340px] h-28 flex items-center justify-between px-3 overflow-hidden transition-all duration-300 glow-${colorClass}`;
                 document.getElementById('plate-text').innerText = numberText;
 
-                if (country === 'ua') {{
+                if (country === 'ua') {
                     codeSpan.innerText = 'UA';
                     codeSpan.className = "text-[10px] font-black mt-0.5 tracking-wider text-blue-800";
                     svgFlag.innerHTML = '<rect width="36" height="12" fill="#0057b7"/><rect y="12" width="36" height="12" fill="#ffd700"/>';
-                }} else if (country === 'ru') {{
+                } else if (country === 'ru') {
                     codeSpan.innerText = 'RUS';
                     codeSpan.className = "text-[10px] font-black mt-0.5 tracking-wider text-red-700";
                     svgFlag.innerHTML = '<rect width="36" height="8" fill="#fff"/><rect y="8" width="36" height="8" fill="#0039a6"/><rect y="16" width="36" height="8" fill="#d52b1e"/>';
-                }} else if (country === 'by') {{
+                } else if (country === 'by') {
                     codeSpan.innerText = 'BY';
                     codeSpan.className = "text-[10px] font-black mt-0.5 tracking-wider text-red-600";
                     svgFlag.innerHTML = '<rect width="36" height="15" fill="#d52b1e"/><rect y="15" width="36" height="9" fill="#008751"/><rect width="10" height="24" fill="#fff"/>';
-                }}
-            }}
+                }
+            }
 
-            document.getElementById('country-select').addEventListener('change', (e) => {{
+            document.getElementById('country-select').addEventListener('change', (e) => {
                 let c = e.target.value;
                 if (c === 'ru') updatePlateVisual('ru', 'А777АА 777', 'yellow');
                 else if (c === 'ua') updatePlateVisual('ua', 'AA 7777 AA', 'yellow');
                 else if (c === 'by') updatePlateVisual('by', '7777 AB-7', 'blue');
-            }});
+            });
 
-            async function spin(tier) {{
+            async function spin(tier) {
                 let cost = tier === 'normal' ? 1000 : 5000;
-                if (state.balance < cost) {{
+                if (state.balance < cost) {
                     alert('Недостаточно квантовых рублей!');
                     return;
-                }}
+                }
                 state.balance -= cost;
                 updateUI();
 
@@ -367,17 +359,17 @@ def get_webapp():
                 infoBox.classList.add('hidden');
 
                 let counter = 0;
-                let interval = setInterval(() => {{
+                let interval = setInterval(() => {
                     let randStr = Math.random().toString(36).substring(2, 8).toUpperCase();
                     updatePlateVisual(country, randStr, 'gray');
                     counter++;
                     if (counter > 10) clearInterval(interval);
                 }, 40);
 
-                let response = await fetch(`/api/spin?country=${{country}}&tier=${{tier}}`);
-                if (response.ok) {{
+                let response = await fetch(`/api/spin?country=${country}&tier=${tier}`);
+                if (response.ok) {
                     let data = await response.json();
-                    setTimeout(() => {{
+                    setTimeout(() => {
                         updatePlateVisual(country, data.number, data.color);
                         document.getElementById('res-title').innerText = data.title;
                         document.getElementById('res-val').innerText = data.value.toLocaleString('ru-RU');
@@ -386,108 +378,108 @@ def get_webapp():
                         state.garage.unshift(data);
                         updateUI();
                         tg.HapticFeedback?.notificationOccurred('success');
-                    }}, 500);
-                }}
-            }}
+                    }, 500);
+                }
+            }
 
-            function renderGarage() {{
+            function renderGarage() {
                 let list = document.getElementById('garage-list');
-                if (state.garage.length === 0) {{
+                if (state.garage.length === 0) {
                     list.innerHTML = '<div class="text-center text-slate-500 py-12 text-xs font-cyber">ГАРАЖ ПУСТ. НАЧНИТЕ КРУТКУ!</div>';
                     return;
-                }}
+                }
                 list.innerHTML = state.garage.map((item, index) => `
-                    <div class="glass-cyber p-4 rounded-xl flex justify-between items-center border glow-${{item.color}}">
+                    <div class="glass-cyber p-4 rounded-xl flex justify-between items-center border glow-${item.color}">
                         <div>
-                            <span class="text-[10px] font-cyber font-bold uppercase tracking-wider text-cyan-300">${{item.title}}</span>
-                            <div class="text-lg font-cyber font-black text-white mt-0.5">${{item.number}}</div>
-                            <span class="text-xs text-emerald-400 font-bold">ЦЕННОСТЬ: ${{item.value.toLocaleString('ru-RU')}} ₽</span>
+                            <span class="text-[10px] font-cyber font-bold uppercase tracking-wider text-cyan-300">${item.title}</span>
+                            <div class="text-lg font-cyber font-black text-white mt-0.5">${item.number}</div>
+                            <span class="text-xs text-emerald-400 font-bold">ЦЕННОСТЬ: ${item.value.toLocaleString('ru-RU')} ₽</span>
                         </div>
                         <div class="flex gap-2">
-                            <button onclick="sellItem(${{index}})" class="bg-emerald-950/60 border border-emerald-500/50 hover:bg-emerald-900 text-emerald-300 px-3 py-2 rounded-lg text-xs font-cyber transition">ПРОДАТЬ</button>
-                            <button onclick="listToMarket(${{index}})" class="bg-cyan-950/60 border border-cyan-500/50 hover:bg-cyan-900 text-cyan-300 px-3 py-2 rounded-lg text-xs font-cyber transition">НА БИРЖУ</button>
+                            <button onclick="sellItem(${index})" class="bg-emerald-950/60 border border-emerald-500/50 hover:bg-emerald-900 text-emerald-300 px-3 py-2 rounded-lg text-xs font-cyber transition">ПРОДАТЬ</button>
+                            <button onclick="listToMarket(${index})" class="bg-cyan-950/60 border border-cyan-500/50 hover:bg-cyan-900 text-cyan-300 px-3 py-2 rounded-lg text-xs font-cyber transition">НА БИРЖУ</button>
                         </div>
                     </div>
                 `).join('');
-            }}
+            }
 
-            function sellItem(index) {{
+            function sellItem(index) {
                 let item = state.garage[index];
                 state.balance += item.value;
                 state.garage.splice(index, 1);
                 updateUI();
                 tg.HapticFeedback?.impactOccurred('medium');
-            }}
+            }
 
-            function listToMarket(index) {{
+            function listToMarket(index) {
                 let item = state.garage[index];
-                state.market.unshift({{
+                state.market.unshift({
                     id: Date.now(),
                     number: item.number,
                     title: item.title,
                     price: Math.round(item.value * 1.3),
                     seller: "Вы",
                     color: item.color
-                }});
+                });
                 state.garage.splice(index, 1);
                 updateUI();
                 alert("Номер успешно выставлен на глобальную биржу!");
-            }}
+            }
 
-            function renderMarket() {{
+            function renderMarket() {
                 let list = document.getElementById('market-list');
                 list.innerHTML = state.market.map((item, index) => `
                     <div class="glass-cyber p-4 rounded-xl flex justify-between items-center border border-cyan-500/20">
                         <div>
-                            <span class="text-[10px] text-slate-400 font-cyber">АГЕНТ: ${{item.seller}}</span>
-                            <div class="text-lg font-cyber font-black text-cyan-300 mt-0.5">${{item.number}}</div>
-                            <span class="text-xs text-slate-300">${{item.title}}</span>
+                            <span class="text-[10px] text-slate-400 font-cyber">АГЕНТ: ${item.seller}</span>
+                            <div class="text-lg font-cyber font-black text-cyan-300 mt-0.5">${item.number}</div>
+                            <span class="text-xs text-slate-300">${item.title}</span>
                         </div>
                         <div class="text-right">
-                            <div class="text-emerald-400 font-bold font-cyber mb-1 text-sm">${{item.price.toLocaleString('ru-RU')}} ₽</div>
-                            ${{item.seller !== "Вы" ? `<button onclick="buyMarketItem(${{index}})" class="bg-cyan-600 hover:bg-cyan-500 text-black px-3 py-1.5 rounded-lg text-xs font-cyber font-bold transition">КУПИТЬ</button>` : `<span class="text-[10px] text-slate-500 font-cyber">ВАШ ЛОТ</span>`}}
+                            <div class="text-emerald-400 font-bold font-cyber mb-1 text-sm">${item.price.toLocaleString('ru-RU')} ₽</div>
+                            ${item.seller !== "Вы" ? `<button onclick="buyMarketItem(${index})" class="bg-cyan-600 hover:bg-cyan-500 text-black px-3 py-1.5 rounded-lg text-xs font-cyber font-bold transition">КУПИТЬ</button>` : `<span class="text-[10px] text-slate-500 font-cyber">ВАШ ЛОТ</span>`}
                         </div>
                     </div>
                 `).join('');
-            }}
+            }
 
-            function buyMarketItem(index) {{
+            function buyMarketItem(index) {
                 let item = state.market[index];
-                if (state.balance < item.price) {{
+                if (state.balance < item.price) {
                     alert("Недостаточно средств на балансе!");
                     return;
-                }}
+                }
                 state.balance -= item.price;
-                state.garage.unshift({{ number: item.number, title: item.title, value: item.price, color: item.color || 'blue' }});
+                state.garage.unshift({ number: item.number, title: item.title, value: item.price, color: item.color || 'blue' });
                 state.market.splice(index, 1);
                 updateUI();
                 tg.HapticFeedback?.notificationOccurred('success');
-            }}
+            }
 
-            function adminGiveMoney() {{
+            function adminGiveMoney() {
                 let targetId = document.getElementById('admin-target-id').value;
                 let amount = parseInt(document.getElementById('admin-money-amount').value) || 0;
                 state.balance += amount;
                 updateUI();
-                alert(`Админ-протокол: успешно начислено ${{amount.toLocaleString('ru-RU')}} ₽ для ID ${{targetId}}!`);
-            }}
+                alert(`Админ-протокол: успешно начислено ${amount.toLocaleString('ru-RU')} ₽ для ID ${targetId}!`);
+            }
 
-            function adminGiveCustomPlate() {{
+            function adminGiveCustomPlate() {
                 let num = document.getElementById('admin-plate-num').value.trim() || "VIP 001";
                 let rarity = document.getElementById('admin-plate-rarity').value;
                 
-                let colorMap = {{ "обычный": "gray", "редкий": "green", "сверхредкий": "blue", "легендарный": "yellow", "мифический": "red", "мистический": "purple" }};
+                let colorMap = { "обычный": "gray", "редкий": "green", "сверхредкий": "blue", "легендарный": "yellow", "мифический": "red", "мистический": "purple" };
                 let color = colorMap[rarity] || "blue";
 
-                state.garage.unshift({{
+                state.garage.unshift({
                     number: num,
-                    title: `👑 ЭКСКЛЮЗИВ СЕТИ (${{rarity.toUpperCase()}})`,
+                    title: `👑 ЭКСКЛЮЗИВ СЕТИ (${rarity.toUpperCase()})`,
                     value: rarity === 'мистический' ? 1000000 : 250000,
                     color: color
-                }});
+                });
                 updateUI();
-                alert(`Слот "${{num}}" (${{rarity}}) успешно внедрен в ваш гараж!`);
-            }}
+                alert(`Слот "${num}" (${rarity}) успешно внедрен в ваш гараж!`);
+            }
 
             updateUI();
             updatePlateVisual('ru', 'А777АА 777', 'yellow');
@@ -495,3 +487,4 @@ def get_webapp():
     </body>
     </html>
     """
+    return html_content.replace("__ADMIN_ID__", str(ADMIN_TG_ID))
