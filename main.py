@@ -6,7 +6,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters import Command
-from aiogram.utils.keyboard import InlineKeyboardBuilder
+from aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardBuilder
 
 BOT_TOKEN = "8609625925:AAF72Vk5wI1oJJ5_QlztYq6CZqGiZBN3F6w"
 DATABASE_URL = os.getenv("DATABASE_URL")
@@ -21,15 +21,25 @@ dp = Dispatcher()
 
 @dp.message(Command("start"))
 async def cmd_start(message: types.Message):
-    builder = InlineKeyboardBuilder()
-    builder.button(
-        text="🚗 Запустить нАмерок", 
+    # Кнопка в самом чате (Reply Keyboard)
+    reply_builder = ReplyKeyboardBuilder()
+    reply_builder.button(
+        text="🚗 Играть в нАмерок", 
         web_app=types.WebAppInfo(url="https://appbotnomera-2.onrender.com")
     )
+    reply_markup = reply_builder.as_markup(resize_keyboard=True)
+
+    # Инлайн кнопка в сообщении
+    inline_builder = InlineKeyboardBuilder()
+    inline_builder.button(
+        text="🎮 Запустить игру", 
+        web_app=types.WebAppInfo(url="https://appbotnomera-2.onrender.com")
+    )
+
     await message.answer(
         "🔥 **нАмерок 2100 // Официальный клиент** 🔥\n\n"
-        "Крути госномера Украины, России и Беларуси, прокачивай уровень, торгуй на бирже и открывай редчайшие мифические знаки!",
-        reply_markup=builder.as_markup(),
+        "Нажми на кнопку **«🚗 Играть в нАмерок»** внизу чата, чтобы открыть игру!",
+        reply_markup=reply_markup,
         parse_mode="Markdown"
     )
 
@@ -40,7 +50,6 @@ async def on_startup():
         await dp.start_polling(bot)
     asyncio.create_task(run_bot())
 
-# Базы букв и областей
 RU_LETTERS = ['А', 'В', 'Е', 'К', 'М', 'Н', 'О', 'Р', 'С', 'Т', 'У', 'Х']
 RU_ALL_REGIONS = ['77', '99', '177', '199', '777', '799', '78', '98', '178', '198', '50', '90', '150', '161', '125']
 
@@ -54,33 +63,47 @@ BY_REGIONS = ['1', '2', '3', '4', '5', '6', '7']
 def spin_plates(country: str, region: str = "auto", tier: str = "normal"):
     roll = random.random()
     
-    # 6 уровней редкости
-    if tier == "elite":
-        if roll < 0.05:
-            rarity, color, title, val_mult = "мистический", "purple", "✨ МИСТИЧЕСКИЙ КВАНТ", 1500000
-        elif roll < 0.18:
-            rarity, color, title, val_mult = "мифический", "red", "🔥 МИФИЧЕСКИЙ НОМЕР", 600000
-        elif roll < 0.40:
-            rarity, color, title, val_mult = "легендарный", "yellow", "⚡ ЛЕГЕНДАРНЫЙ СЛОТ", 250000
-        elif roll < 0.65:
-            rarity, color, title, val_mult = "сверхредкий", "blue", "💎 СВЕРХРЕДКИЙ", 90000
-        elif roll < 0.85:
-            rarity, color, title, val_mult = "редкий", "green", "🟢 РЕДКИЙ СЕГМЕНТ", 35000
-        else:
-            rarity, color, title, val_mult = "обычный", "gray", "⚪ ОБЫЧНЫЙ НОМЕР", 12000
-    else:
-        if roll < 0.01:
-            rarity, color, title, val_mult = "мистический", "purple", "✨ МИСТИЧЕСКИЙ КВАНТ", 1000000
+    # Расчет вероятностей по уровням круток
+    if tier == "legendary":
+        # Легендарная крутка (15 000 ₽)
+        if roll < 0.0033: # 0.33% Мистический
+            rarity, color, title, val_mult = "мистический", "purple", "✨ МИСТИЧЕСКИЙ КВАНТ", 2000000
         elif roll < 0.05:
-            rarity, color, title, val_mult = "мифический", "red", "🔥 МИФИЧЕСКИЙ НОМЕР", 400000
-        elif roll < 0.15:
-            rarity, color, title, val_mult = "легендарный", "yellow", "⚡ ЛЕГЕНДАРНЫЙ СЛОТ", 150000
-        elif roll < 0.35:
-            rarity, color, title, val_mult = "сверхредкий", "blue", "💎 СВЕРХРЕДКИЙ", 60000
-        elif roll < 0.65:
-            rarity, color, title, val_mult = "редкий", "green", "🟢 РЕДКИЙ СЕГМЕНТ", 20000
+            rarity, color, title, val_mult = "мифический", "red", "🔥 МИФИЧЕСКИЙ НОМЕР", 800000
+        elif roll < 0.20:
+            rarity, color, title, val_mult = "легендарный", "yellow", "⚡ ЛЕГЕНДАРНЫЙ СЛОТ", 300000
+        elif roll < 0.50:
+            rarity, color, title, val_mult = "сверхредкий", "blue", "💎 СВЕРХРЕДКИЙ", 100000
         else:
-            rarity, color, title, val_mult = "обычный", "gray", "⚪ ОБЫЧНЫЙ НОМЕР", 5000
+            rarity, color, title, val_mult = "редкий", "green", "🟢 РЕДКИЙ СЕГМЕНТ", 45000
+    elif tier == "rare":
+        # Редкая крутка (5 000 ₽)
+        if roll < 0.001:
+            rarity, color, title, val_mult = "мистический", "purple", "✨ МИСТИЧЕСКИЙ КВАНТ", 1200000
+        elif roll < 0.02:
+            rarity, color, title, val_mult = "мифический", "red", "🔥 МИФИЧЕСКИЙ НОМЕР", 500000
+        elif roll < 0.10:
+            rarity, color, title, val_mult = "легендарный", "yellow", "⚡ ЛЕГЕНДАРНЫЙ СЛОТ", 200000
+        elif roll < 0.35:
+            rarity, color, title, val_mult = "сверхредкий", "blue", "💎 СВЕРХРЕДКИЙ", 75000
+        elif roll < 0.70:
+            rarity, color, title, val_mult = "редкий", "green", "🟢 РЕДКИЙ СЕГМЕНТ", 25000
+        else:
+            rarity, color, title, val_mult = "обычный", "gray", "⚪ ОБЫЧНЫЙ НОМЕР", 8000
+    else:
+        # Обычная крутка (1 000 ₽) - заниженные шансы
+        if roll < 0.0005:
+            rarity, color, title, val_mult = "мистический", "purple", "✨ МИСТИЧЕСКИЙ КВАНТ", 1000000
+        elif roll < 0.008:
+            rarity, color, title, val_mult = "мифический", "red", "🔥 МИФИЧЕСКИЙ НОМЕР", 350000
+        elif roll < 0.05:
+            rarity, color, title, val_mult = "легендарный", "yellow", "⚡ ЛЕГЕНДАРНЫЙ СЛОТ", 120000
+        elif roll < 0.20:
+            rarity, color, title, val_mult = "сверхредкий", "blue", "💎 СВЕРХРЕДКИЙ", 45000
+        elif roll < 0.50:
+            rarity, color, title, val_mult = "редкий", "green", "🟢 РЕДКИЙ СЕГМЕНТ", 15000
+        else:
+            rarity, color, title, val_mult = "обычный", "gray", "⚪ ОБЫЧНЫЙ НОМЕР", 4000
 
     if country == "ru":
         l1 = random.choice(RU_LETTERS)
@@ -130,9 +153,7 @@ def get_webapp():
                 background-color: #0b0f17;
                 color: #f3f4f6;
             }
-            .font-plate {
-                font-family: 'PT Sans Caption', sans-serif;
-            }
+            .font-plate { font-family: 'PT Sans Caption', sans-serif; }
             .glass-panel {
                 background: rgba(17, 24, 39, 0.85);
                 backdrop-filter: blur(12px);
@@ -153,7 +174,6 @@ def get_webapp():
             .glow-red { animation: redGlow 1s infinite; }
             .glow-purple { animation: purpleGlow 0.8s infinite; }
 
-            /* Внутриигровое всплывающее уведомление */
             #toast {
                 transition: all 0.3s ease;
                 transform: translateY(-100%);
@@ -167,7 +187,7 @@ def get_webapp():
     </head>
     <body class="min-h-screen flex flex-col select-none pb-8 overflow-x-hidden">
         
-        <!-- ИГРОВОЙ TOAST (УВЕДОМЛЕНИЕ) -->
+        <!-- ВНУТРИИГРОВОЙ TOAST -->
         <div id="toast" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 pointer-events-none w-11/12 max-w-md">
             <div id="toast-body" class="bg-slate-900/95 border border-indigo-500/50 p-3.5 rounded-2xl shadow-2xl flex items-center gap-3 backdrop-blur-md">
                 <span id="toast-icon" class="text-xl">🔔</span>
@@ -186,7 +206,7 @@ def get_webapp():
                 <div class="text-xs bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-700 text-slate-300 font-bold flex items-center gap-1.5">
                     <span>Ур. <span id="level" class="text-white">1</span></span>
                     <span class="text-slate-600">|</span>
-                    <span class="text-[10px] text-indigo-400"><span id="exp">0</span>/100 EXP</span>
+                    <span class="text-[10px] text-indigo-400"><span id="exp">0</span>/<span id="max-exp">100</span> EXP</span>
                 </div>
                 <button onclick="showView('profile')" class="bg-indigo-600 hover:bg-indigo-500 p-2 px-3 rounded-xl border border-indigo-400/50 text-white transition flex items-center gap-1 active:scale-95 shadow-md">
                     👤 Меню
@@ -202,16 +222,14 @@ def get_webapp():
                 <span class="text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded font-bold">БОНУС</span>
             </div>
 
-            <!-- РЕАЛИСТИЧНЫЙ НОМЕРНОЙ ЗНАК С УЧЕТОМ СТРАНЫ -->
+            <!-- РЕАЛИСТИЧНЫЙ НОМЕРНОЙ ЗНАК -->
             <div class="w-full flex justify-center my-2">
                 <div id="plate-box" class="relative bg-white text-black border-4 rounded-xl shadow-2xl w-full max-w-[340px] h-28 flex items-center justify-between px-3 overflow-hidden transition-all duration-300 glow-gray">
                     
-                    <!-- БУКВЫ И ЦИФРЫ -->
                     <div class="flex-1 text-center font-plate font-black text-2xl tracking-wider overflow-hidden">
                         <span id="plate-text">А 777 АА</span>
                     </div>
 
-                    <!-- ДИНАМИЧЕСКИЙ БЛОК ДЛЯ РОССИИ И БЕЛАРУСИ -->
                     <div id="region-block" class="border-l-2 border-slate-300 pl-2.5 flex flex-col items-center justify-center min-w-[65px]">
                         <span id="plate-region" class="text-2xl font-plate font-black leading-none text-slate-900">777</span>
                         <div class="flex items-center gap-1 mt-1">
@@ -220,7 +238,6 @@ def get_webapp():
                         </div>
                     </div>
 
-                    <!-- ДИНАМИЧЕСКИЙ БЛОК ДЛЯ УКРАИНЫ (СЛЕВА) -->
                     <div id="ua-badge" class="hidden absolute left-0 top-0 bottom-0 bg-blue-700 text-white w-7 flex flex-col items-center justify-center border-r-2 border-black">
                         <div class="w-4 h-3 bg-yellow-400 rounded-sm mb-1"></div>
                         <span class="text-[9px] font-black tracking-widest text-white">UA</span>
@@ -229,14 +246,22 @@ def get_webapp():
                 </div>
             </div>
 
-            <!-- ИНФО О СТОИМОСТИ -->
             <div id="info-box" class="text-center my-1 hidden glass-panel p-3 rounded-xl w-full border border-slate-800">
                 <p id="res-title" class="text-xs font-bold text-indigo-400 uppercase tracking-widest"></p>
                 <p class="text-xs text-slate-300 mt-1">ОЦЕНКА: <span id="res-val" class="text-emerald-400 font-black text-sm">0</span> ₽</p>
             </div>
 
-            <!-- ВЫБОР СТРАНЫ И ОБЛАСТИ / РЕГИОНА -->
-            <div class="w-full space-y-3 mt-auto pt-4">
+            <!-- ВЫБОР ТИПА КРУТКИ, СТРАНЫ И РЕГИОНА -->
+            <div class="w-full space-y-3 mt-auto pt-2">
+                <div>
+                    <label class="block text-[10px] text-slate-400 mb-1 font-bold">ТИП КОНТЕЙНЕРА / КРУТКИ:</label>
+                    <select id="spin-tier-select" onchange="calculateSpinPrice()" class="w-full bg-slate-800/90 border border-slate-700/80 rounded-xl p-3 text-xs font-bold text-amber-400 focus:outline-none">
+                        <option value="normal">📦 Обычная крутка — 1 000 ₽ (с 1 уровня)</option>
+                        <option value="rare" id="opt-rare" disabled>🟢 Редкая крутка — 5 000 ₽ (нужен 3 уровень)</option>
+                        <option value="legendary" id="opt-legendary" disabled>⚡ Легендарная крутка — 15 000 ₽ (нужен 5 уровень)</option>
+                    </select>
+                </div>
+
                 <div class="flex gap-2">
                     <select id="country-select" onchange="onCountryChange()" class="bg-slate-800/90 border border-slate-700/80 rounded-xl p-3 text-xs font-bold text-white focus:outline-none flex-1">
                         <option value="ru">🇷🇺 Россия</option>
@@ -248,7 +273,6 @@ def get_webapp():
                     </select>
                 </div>
 
-                <!-- КНОПКИ КРУТКИ И ПРОДАЖИ -->
                 <div class="flex gap-2">
                     <button onclick="spin()" id="spin-btn" class="flex-1 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 text-slate-950 font-black py-4 rounded-xl shadow-lg transition flex items-center justify-between px-5 active:scale-[0.98]">
                         <span>🎰 КРУТИТЬ</span>
@@ -262,9 +286,9 @@ def get_webapp():
             </div>
         </div>
 
-        <!-- МОДАЛЬНОЕ ОКНО ДЛЯ РЕДКИХ НОМЕРОВ -->
+        <!-- МОДАЛЬНОЕ ОКНО ДЛЯ РЕДКИХ НОМЕРОВ С ПОДТВЕРЖДЕНИЕМ ПРОДАЖИ -->
         <div id="rare-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-            <div class="glass-panel p-6 rounded-2xl max-w-sm w-full text-center space-y-4 border border-amber-500/50 shadow-2xl">
+            <div id="modal-step-1" class="glass-panel p-6 rounded-2xl max-w-sm w-full text-center space-y-4 border border-amber-500/50 shadow-2xl">
                 <div class="text-3xl">🔥</div>
                 <h3 class="text-lg font-black text-amber-400" id="modal-rarity-title">ВЫПАЛ ЛЕГЕНДАРНЫЙ НОМЕР!</h3>
                 <p class="text-xs text-slate-300">Вы выбили эксклюзивный госномер <b id="modal-plate-name" class="text-white"></b>!</p>
@@ -273,11 +297,26 @@ def get_webapp():
                     <div id="modal-plate-price" class="text-lg font-black text-emerald-400">250 000 ₽</div>
                 </div>
                 <div class="flex gap-3 pt-2">
-                    <button onclick="modalAction('sell')" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-xs transition">
-                        💵 Продать сразу
+                    <button onclick="confirmSellStep()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-xs transition">
+                        💵 Продать
                     </button>
                     <button onclick="modalAction('keep')" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl text-xs transition">
-                        🚗 В гараж
+                        🚗 Забрать в гараж
+                    </button>
+                </div>
+            </div>
+
+            <!-- ОКНО ПОДТВЕРЖДЕНИЯ ПРОДАЖИ -->
+            <div id="modal-step-confirm" class="hidden glass-panel p-6 rounded-2xl max-w-sm w-full text-center space-y-4 border border-rose-500/50 shadow-2xl">
+                <div class="text-3xl">⚠️</div>
+                <h3 class="text-base font-black text-rose-400">ПОДТВЕРЖДЕНИЕ ПРОДАЖИ</h3>
+                <p class="text-xs text-slate-300">Вы уверены, что хотите продать редкий номер <b id="confirm-plate-name" class="text-white"></b> за <span id="confirm-plate-price" class="text-emerald-400 font-bold"></span>?</p>
+                <div class="flex gap-3 pt-2">
+                    <button onclick="modalAction('sell')" class="flex-1 bg-rose-600 hover:bg-rose-500 text-white font-bold py-3 rounded-xl text-xs transition">
+                        Да, продать
+                    </button>
+                    <button onclick="backToStep1()" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 rounded-xl text-xs transition">
+                        Назад / В гараж
                     </button>
                 </div>
             </div>
@@ -344,7 +383,7 @@ def get_webapp():
             <div id="garage-list" class="space-y-3"></div>
         </div>
 
-        <!-- ЭКРАН 4: ГНЕЗДО КВЕСТОВ -->
+        <!-- ЭКРАН 4: КВЕСТЫ -->
         <div id="view-quests" class="p-4 hidden flex-col flex-1 max-w-md mx-auto w-full space-y-3">
             <button onclick="showView('profile')" class="text-xs text-indigo-400 font-bold flex items-center gap-1 mb-1">
                 ← Назад в меню
@@ -362,7 +401,7 @@ def get_webapp():
             <div id="market-list" class="space-y-3"></div>
         </div>
 
-        <!-- ЭКРАН 6: АДМИН-ПАНЕЛЬ ПО ID -->
+        <!-- ЭКРАН 6: АДМИН-ПАНЕЛЬ -->
         <div id="view-admin" class="p-4 hidden flex-col flex-1 max-w-md mx-auto w-full space-y-3">
             <button onclick="showView('profile')" class="text-xs text-indigo-400 font-bold flex items-center gap-1 mb-1">
                 ← Назад в меню
@@ -458,6 +497,7 @@ def get_webapp():
             };
 
             const RU_REGIONS = ['77', '99', '177', '199', '777', '799', '78', '98', '178', '198', '50', '90', '150', '161', '125'];
+            const RU_LETTERS = ['А', 'В', 'Е', 'К', 'М', 'Н', 'О', 'Р', 'С', 'Т', 'У', 'Х'];
             const UA_OBLASTS = ['AA', 'KA', 'BC', 'HC', 'AE', 'BH', 'BI', 'AX', 'AP', 'CB', 'AM', 'AO', 'BX'];
             const BY_REGIONS = ['1', '2', '3', '4', '5', '6', '7'];
 
@@ -467,6 +507,10 @@ def get_webapp():
                 document.getElementById('toast-icon').innerText = icon;
                 toast.classList.add('show');
                 setTimeout(() => toast.classList.remove('show'), 3000);
+            }
+
+            function getMaxExpForLevel(lvl) {
+                return lvl * 100; // Прогрессия опыта
             }
 
             function animateBalance(targetValue) {
@@ -510,21 +554,29 @@ def get_webapp():
             }
 
             function calculateSpinPrice() {
+                let tier = document.getElementById('spin-tier-select').value;
                 let reg = document.getElementById('region-select').value;
+                
                 let basePrice = 1000;
+                if (tier === 'rare') basePrice = 5000;
+                else if (tier === 'legendary') basePrice = 15000;
+
                 if (['777', '799', '199', '77', 'AA', 'KA', '7'].includes(reg)) {
-                    basePrice = 2500;
+                    basePrice = Math.round(basePrice * 1.2);
                 }
+
                 document.getElementById('spin-price-badge').innerText = basePrice.toLocaleString('ru-RU') + ' ₽';
                 return basePrice;
             }
 
             function addExp(amount) {
                 state.exp += amount;
-                if (state.exp >= 100) {
+                let maxExp = getMaxExpForLevel(state.level);
+                
+                if (state.exp >= maxExp) {
                     state.level += 1;
-                    state.exp -= 100;
-                    let reward = 200000;
+                    state.exp -= maxExp;
+                    let reward = state.level * 150000;
                     animateBalance(state.balance + reward);
                     showToast(`🎉 НОВЫЙ УРОВЕНЬ ${state.level}! Награда: +${reward.toLocaleString('ru-RU')} ₽!`, "⭐");
                 }
@@ -532,8 +584,29 @@ def get_webapp():
             }
 
             function updateUI() {
+                // Разблокировка уровней круток
+                let rareOpt = document.getElementById('opt-rare');
+                let legOpt = document.getElementById('opt-legendary');
+
+                if (state.level >= 3) {
+                    rareOpt.disabled = false;
+                    rareOpt.innerText = "🟢 Редкая крутка — 5 000 ₽ (Доступно)";
+                } else {
+                    rareOpt.disabled = true;
+                    rareOpt.innerText = "🟢 Редкая крутка — 5 000 ₽ (нужен 3 уровень)";
+                }
+
+                if (state.level >= 5) {
+                    legOpt.disabled = false;
+                    legOpt.innerText = "⚡ Легендарная крутка — 15 000 ₽ (Доступно)";
+                } else {
+                    legOpt.disabled = true;
+                    legOpt.innerText = "⚡ Легендарная крутка — 15 000 ₽ (нужен 5 уровень)";
+                }
+
                 document.getElementById('level').innerText = state.level;
                 document.getElementById('exp').innerText = state.exp;
+                document.getElementById('max-exp').innerText = getMaxExpForLevel(state.level);
                 document.getElementById('menu-garage-count').innerText = state.garage.length;
                 
                 renderGarage();
@@ -589,18 +662,28 @@ def get_webapp():
 
                 let country = document.getElementById('country-select').value;
                 let region = document.getElementById('region-select').value;
+                let tier = document.getElementById('spin-tier-select').value;
                 let infoBox = document.getElementById('info-box');
                 infoBox.classList.add('hidden');
 
+                // Анимация перебора БУКВ И ЦИФР
                 let counter = 0;
                 let interval = setInterval(() => {
                     let randNum = Math.floor(100 + Math.random() * 900);
-                    updatePlateVisual(country, country === 'ua' ? `АА ${randNum} ВХ` : `Х ${randNum} ХХ`, '99', 'gray');
+                    let l1 = RU_LETTERS[Math.floor(Math.random() * RU_LETTERS.length)];
+                    let l2 = RU_LETTERS[Math.floor(Math.random() * RU_LETTERS.length)];
+                    let l3 = RU_LETTERS[Math.floor(Math.random() * RU_LETTERS.length)];
+                    
+                    let animatedText = country === 'ua' 
+                        ? `АА ${randNum} ВХ` 
+                        : `${l1} ${randNum} ${l2}${l3}`;
+
+                    updatePlateVisual(country, animatedText, '99', 'gray');
                     counter++;
-                    if (counter > 12) clearInterval(interval);
+                    if (counter > 14) clearInterval(interval);
                 }, 40);
 
-                let response = await fetch(`/api/spin?country=${country}&region=${region}&tier=normal`);
+                let response = await fetch(`/api/spin?country=${country}&region=${region}&tier=${tier}`);
                 if (response.ok) {
                     let data = await response.json();
                     setTimeout(() => {
@@ -619,9 +702,8 @@ def get_webapp():
                             document.getElementById('res-val').innerText = startVal.toLocaleString('ru-RU');
                         }, 25);
 
-                        addExp(15);
+                        addExp(tier === 'legendary' ? 50 : (tier === 'rare' ? 25 : 15));
                         
-                        // Прогресс квестов
                         state.quests[0].progress = 1;
                         if (state.quests[0].progress >= state.quests[0].target) state.quests[0].done = true;
 
@@ -638,6 +720,9 @@ def get_webapp():
                             document.getElementById('modal-rarity-title').innerText = `ВЫПАЛ ${data.title}!`;
                             document.getElementById('modal-plate-name').innerText = `${data.number} | ${data.region}`;
                             document.getElementById('modal-plate-price').innerText = `${data.value.toLocaleString('ru-RU')} ₽`;
+                            
+                            document.getElementById('modal-step-1').classList.remove('hidden');
+                            document.getElementById('modal-step-confirm').classList.add('hidden');
                             document.getElementById('rare-modal').classList.remove('hidden');
                         } else {
                             state.garage.unshift(data);
@@ -645,8 +730,22 @@ def get_webapp():
                         }
 
                         tg.HapticFeedback?.notificationOccurred('success');
-                    }, 600);
+                    }, 650);
                 }
+            }
+
+            function confirmSellStep() {
+                if (!state.pendingRarePlate) return;
+                document.getElementById('confirm-plate-name').innerText = `${state.pendingRarePlate.number} | ${state.pendingRarePlate.region}`;
+                document.getElementById('confirm-plate-price').innerText = `${state.pendingRarePlate.value.toLocaleString('ru-RU')} ₽`;
+                
+                document.getElementById('modal-step-1').classList.add('hidden');
+                document.getElementById('modal-step-confirm').classList.remove('hidden');
+            }
+
+            function backToStep1() {
+                document.getElementById('modal-step-confirm').classList.add('hidden');
+                document.getElementById('modal-step-1').classList.remove('hidden');
             }
 
             function sellCurrentPlate() {
@@ -654,7 +753,6 @@ def get_webapp():
                 let val = state.lastDroppedPlate.value;
                 animateBalance(state.balance + val);
                 
-                // Если номер успел попасть в гараж — удаляем его
                 let index = state.garage.indexOf(state.lastDroppedPlate);
                 if (index > -1) state.garage.splice(index, 1);
 
