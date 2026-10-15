@@ -23,12 +23,12 @@ dp = Dispatcher()
 async def cmd_start(message: types.Message):
     builder = InlineKeyboardBuilder()
     builder.button(
-        text="🚗 Играть в нАмерок", 
+        text="🚗 Запустить нАмерок", 
         web_app=types.WebAppInfo(url="https://appbotnomera-2.onrender.com")
     )
     await message.answer(
         "🔥 **нАмерок // Официальный клиент** 🔥\n\n"
-        "Открывай контейнеры, крути госномера, выполняй квесты пути новичка и стань топ-коллекционером мегаполиса!",
+        "Твой личный профиль, гараж редких госномеров России, Украины и Беларуси, квесты и биржа в одном месте!",
         reply_markup=builder.as_markup(),
         parse_mode="Markdown"
     )
@@ -52,17 +52,17 @@ def spin_plates(country: str, tier: str = "normal"):
     
     if tier == "elite":
         if roll < 0.05:
-            rarity, color, title, val_mult = "мистический", "purple", "✨ МИСТИЧЕСКИЙ КВАНТ", 1200000
+            rarity, color, title, val_mult = "мистический", "purple", "✨ МИСТИЧЕСКИЙ КВАНТ", 1500000
         elif roll < 0.18:
-            rarity, color, title, val_mult = "мифический", "red", "🔥 МИФИЧЕСКИЙ НОМЕР", 500000
+            rarity, color, title, val_mult = "мифический", "red", "🔥 МИФИЧЕСКИЙ НОМЕР", 600000
         elif roll < 0.40:
-            rarity, color, title, val_mult = "легендарный", "yellow", "⚡ ЛЕГЕНДАРНЫЙ СЛОТ", 200000
+            rarity, color, title, val_mult = "легендарный", "yellow", "⚡ ЛЕГЕНДАРНЫЙ СЛОТ", 250000
         elif roll < 0.65:
-            rarity, color, title, val_mult = "сверхредкий", "blue", "💎 СВЕРХРЕДКИЙ", 80000
+            rarity, color, title, val_mult = "сверхредкий", "blue", "💎 СВЕРХРЕДКИЙ", 90000
         elif roll < 0.85:
-            rarity, color, title, val_mult = "редкий", "green", "🟢 РЕДКИЙ СЕГМЕНТ", 30000
+            rarity, color, title, val_mult = "редкий", "green", "🟢 РЕДКИЙ СЕГМЕНТ", 35000
         else:
-            rarity, color, title, val_mult = "обычный", "gray", "⚪ ОБЫЧНЫЙ НОМЕР", 10000
+            rarity, color, title, val_mult = "обычный", "gray", "⚪ ОБЫЧНЫЙ НОМЕР", 12000
     else:
         if roll < 0.01:
             rarity, color, title, val_mult = "мистический", "purple", "✨ МИСТИЧЕСКИЙ КВАНТ", 1000000
@@ -79,21 +79,21 @@ def spin_plates(country: str, tier: str = "normal"):
 
     if country == "ru":
         l1 = random.choice(RU_LETTERS)
+        digits = f"{random.randint(1, 999):03d}" if rarity in ["обычный", "редкий"] else random.choice(["777", "001", "999", "333"])
         l23 = "".join(random.choices(RU_LETTERS, k=2))
         reg = random.choice(RU_REGIONS)
-        dig = f"{random.randint(1, 999):03d}" if rarity in ["обычный", "редкий"] else random.choice(["777", "001", "999", "333"])
-        number_str = f"{l1} {dig} {l23}"
+        number_str = f"{l1} {digits} {l23}"
         region_str = reg
     elif country == "ua":
         series = random.choice(UA_SERIES)
-        dig = f"{random.randint(1, 9999):04d}" if rarity in ["обычный", "редкий"] else str(random.choice([1, 7, 9])) * 4
-        number_str = f"{series} {dig}"
+        digits = f"{random.randint(1, 9999):04d}" if rarity in ["обычный", "редкий"] else str(random.choice([1, 7, 9])) * 4
+        number_str = f"{series} {digits}"
         region_str = "UA"
     else:
-        dig = f"{random.randint(1, 9999):04d}"
+        digits = f"{random.randint(1, 9999):04d}"
         let = random.choice(BY_LETTERS)
         reg = random.choice(BY_REGIONS)
-        number_str = f"{dig} {let}"
+        number_str = f"{digits} {let}"
         region_str = reg
 
     return {
@@ -128,7 +128,7 @@ def get_webapp():
                 font-family: 'PT Sans Caption', sans-serif;
             }
             .glass-panel {
-                background: rgba(17, 24, 39, 0.75);
+                background: rgba(17, 24, 39, 0.85);
                 backdrop-filter: blur(12px);
                 border: 1px solid rgba(255, 255, 255, 0.08);
             }
@@ -148,7 +148,7 @@ def get_webapp():
             .glow-purple { animation: purpleGlow 0.8s infinite; }
         </style>
     </head>
-    <body class="min-h-screen flex flex-col select-none pb-24 overflow-x-hidden">
+    <body class="min-h-screen flex flex-col select-none pb-8 overflow-x-hidden">
         
         <!-- ВЕРХНЯЯ ШАПКА -->
         <header class="bg-slate-900/90 border-b border-slate-800 p-3 flex justify-between items-center sticky top-0 z-50">
@@ -158,72 +158,93 @@ def get_webapp():
             </div>
             
             <div class="flex items-center gap-2">
-                <button id="admin-tab-btn" onclick="switchTab('admin')" class="hidden bg-rose-950/80 border border-rose-500/50 text-rose-400 px-2.5 py-1.5 rounded-xl font-bold text-xs tracking-wider active:scale-95 transition">
-                    👑 АДМИН
-                </button>
                 <div class="text-xs bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-700 text-slate-300 font-bold flex items-center gap-1.5">
                     <span>Ур. <span id="level" class="text-white">1</span></span>
                     <span class="text-slate-600">|</span>
                     <span class="flex items-center text-amber-400">🔥 <span id="energy" class="text-white ml-0.5">0</span></span>
                 </div>
-                <!-- КНОПКА С ЧЕЛОВЕЧКОМ (ПРОФИЛЬ И МЕНЮ) -->
-                <button onclick="switchTab('profile')" id="btn-profile" class="bg-indigo-600 hover:bg-indigo-500 p-2 px-3 rounded-xl border border-indigo-400/50 text-white transition flex items-center gap-1 active:scale-95 shadow-md shadow-indigo-950/50">
-                    👤
-                </button>
-                <button onclick="switchTab('garage')" class="bg-slate-800 hover:bg-slate-700 p-2 rounded-xl border border-slate-700 text-slate-200 transition">
-                    ☰
+                <!-- КНОПКА ПРОФИЛЯ / МЕНЮ -->
+                <button onclick="showView('profile')" class="bg-indigo-600 hover:bg-indigo-500 p-2 px-3 rounded-xl border border-indigo-400/50 text-white transition flex items-center gap-1 active:scale-95 shadow-md shadow-indigo-950/50">
+                    👤 Меню
                 </button>
             </div>
         </header>
 
-        <!-- ВКЛАДКИ НАВИГАЦИИ -->
-        <nav class="flex border-b border-slate-800 bg-slate-900/40 text-xs font-semibold">
-            <button onclick="switchTab('game')" id="tab-game-btn" class="flex-1 py-2.5 text-center text-indigo-400 border-b-2 border-indigo-500 transition">🎰 Слоты</button>
-            <button onclick="switchTab('garage')" id="tab-garage-btn" class="flex-1 py-2.5 text-center text-slate-400 transition">🚗 Гараж (<span id="garage-count">0</span>)</button>
-            <button onclick="switchTab('quests')" id="tab-quests-btn" class="flex-1 py-2.5 text-center text-slate-400 transition">🎯 Квесты</button>
-            <button onclick="switchTab('market')" id="tab-market-btn" class="flex-1 py-2.5 text-center text-slate-400 transition">📈 Биржа</button>
-        </nav>
-
-        <!-- ВКЛАДКА 1: ИГРОВОЙ ЭКРАН -->
-        <div id="tab-game" class="p-4 flex flex-col items-center flex-1 max-w-md mx-auto w-full space-y-3">
-            
-            <div class="w-full bg-slate-900/80 border border-slate-800 rounded-xl p-2.5 text-center shadow-sm">
-                <span class="text-xs text-amber-400 font-bold">🔥 Страна дня: <span id="day-country">Россия</span> • мифик x2</span>
-            </div>
-
-            <!-- Путь новичка -->
-            <div onclick="switchTab('quests')" class="w-full glass-panel rounded-xl p-3 flex justify-between items-center cursor-pointer hover:border-indigo-500/50 transition">
-                <div class="flex items-center gap-2.5">
-                    <div class="w-8 h-8 rounded-lg bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center text-indigo-400 font-bold text-xs">🎯</div>
+        <!-- ЭКРАН 1: ПРОФИЛЬ И ХАБ (ГЛАВНЫЙ) -->
+        <div id="view-profile" class="p-4 flex flex-col flex-1 max-w-md mx-auto w-full space-y-4">
+            <!-- Карточка пользователя -->
+            <div class="glass-panel p-5 rounded-2xl border border-slate-800 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-indigo-600/30 border border-indigo-500/50 rounded-2xl flex items-center justify-center text-xl text-indigo-300 font-bold">
+                        👤
+                    </div>
                     <div>
-                        <div class="text-xs font-bold text-slate-200">Путь новичка</div>
-                        <div class="text-[10px] text-slate-400">Выполни 6 целей и получи легендарный контейнер</div>
+                        <div class="flex items-center gap-2">
+                            <h2 class="text-sm font-bold text-white">Агент Мегаполиса</h2>
+                            <!-- Бейдж администратора, появится если ID совпадет -->
+                            <span id="admin-badge" class="hidden bg-rose-600 text-white text-[9px] font-black px-2 py-0.5 rounded shadow">⚡ АДМИН</span>
+                        </div>
+                        <p class="text-[11px] text-slate-400">ID: <span id="user-tg-id">7271568260</span></p>
                     </div>
                 </div>
-                <div class="text-xs font-bold text-slate-400 bg-slate-800 px-2 py-1 rounded-lg border border-slate-700">0/6</div>
-            </div>
-
-            <div class="w-full glass-panel rounded-xl p-3 flex justify-between items-center">
-                <div class="flex items-center gap-2.5">
-                    <div class="w-8 h-8 rounded-lg bg-blue-500/20 border border-blue-500/40 flex items-center justify-center text-blue-400 font-bold text-xs">📅</div>
-                    <div>
-                        <div class="text-xs font-bold text-slate-200">Ивент «Столичный уикенд»</div>
-                        <div class="text-[10px] text-slate-400">Старт в пятницу в 18:00 • через 1 д 1 ч</div>
-                    </div>
+                <div class="text-right">
+                    <span class="text-xs text-amber-400 font-bold">⭐ Ур. 1</span>
                 </div>
-                <span class="text-[10px] font-bold text-slate-400 bg-slate-800/80 px-2 py-1 rounded-lg">скоро</span>
             </div>
 
-            <div class="text-center text-xs text-slate-400 pt-1">Крутите номер</div>
+            <!-- ГЛАВНОЕ МЕНЮ КНОПОК -->
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="showView('slots')" class="glass-panel p-4 rounded-2xl border border-indigo-500/30 bg-indigo-950/20 flex flex-col items-center justify-center gap-2 hover:border-indigo-400 transition active:scale-95">
+                    <span class="text-3xl">🎰</span>
+                    <span class="text-xs font-bold text-white">Крутить Слоты</span>
+                    <span class="text-[10px] text-indigo-300">Открыть рулетку</span>
+                </button>
+                
+                <button onclick="showView('garage')" class="glass-panel p-4 rounded-2xl border border-slate-800 flex flex-col items-center justify-center gap-2 hover:border-slate-600 transition active:scale-95">
+                    <span class="text-3xl">🚗</span>
+                    <span class="text-xs font-bold text-white">Гараж</span>
+                    <span class="text-[10px] text-slate-400"><span id="menu-garage-count">0</span> номеров</span>
+                </button>
 
-            <!-- НОМЕРНОЙ ЗНАК -->
-            <div class="w-full flex justify-center my-2">
+                <button onclick="showView('quests')" class="glass-panel p-4 rounded-2xl border border-slate-800 flex flex-col items-center justify-center gap-2 hover:border-slate-600 transition active:scale-95">
+                    <span class="text-3xl">🎯</span>
+                    <span class="text-xs font-bold text-white">Квесты</span>
+                    <span class="text-[10px] text-amber-400">Путь новичка</span>
+                </button>
+
+                <button onclick="showView('market')" class="glass-panel p-4 rounded-2xl border border-slate-800 flex flex-col items-center justify-center gap-2 hover:border-slate-600 transition active:scale-95">
+                    <span class="text-3xl">📈</span>
+                    <span class="text-xs font-bold text-white">Биржа</span>
+                    <span class="text-[10px] text-emerald-400">Аукцион</span>
+                </button>
+            </div>
+
+            <!-- Админ-панель кнопка (скрыта по умолчанию) -->
+            <button id="admin-menu-btn" onclick="showView('admin')" class="hidden w-full bg-rose-600/20 border border-rose-500/50 text-rose-300 font-bold py-3 rounded-xl text-xs transition flex items-center justify-center gap-2">
+                👑 Терминал Администратора
+            </button>
+        </div>
+
+        <!-- ЭКРАН 2: СЛОТЫ И КРУТКА -->
+        <div id="view-slots" class="p-4 hidden flex-col flex-1 max-w-md mx-auto w-full space-y-4">
+            <button onclick="showView('profile')" class="text-xs text-indigo-400 font-bold flex items-center gap-1 mb-1">
+                ← Назад в профиль
+            </button>
+
+            <div class="w-full bg-slate-900/80 border border-slate-800 rounded-xl p-2.5 text-center">
+                <span class="text-xs text-amber-400 font-bold">🔥 Страна дня: Россия • мифик x2</span>
+            </div>
+
+            <div class="text-center text-xs text-slate-400 pt-2">Крутите реальный госномер</div>
+
+            <!-- НОМЕРНОЙ ЗНАК КАК В ЖИЗНИ -->
+            <div class="w-full flex justify-center my-3">
                 <div id="plate-box" class="relative bg-white text-black border-4 rounded-xl shadow-2xl w-full max-w-[340px] h-28 flex items-center justify-between px-3 overflow-hidden transition-all duration-300 glow-gray">
                     <div class="flex-1 text-center font-plate font-black text-3xl tracking-wider overflow-hidden">
-                        <span id="plate-text">? ????? ?</span>
+                        <span id="plate-text">А 777 АА</span>
                     </div>
                     <div class="border-l-2 border-slate-300 pl-3 flex flex-col items-center justify-center min-w-[70px]">
-                        <span id="plate-region" class="text-2xl font-plate font-black leading-none text-slate-900">??</span>
+                        <span id="plate-region" class="text-2xl font-plate font-black leading-none text-slate-900">777</span>
                         <div class="flex items-center gap-1 mt-1">
                             <span id="plate-code-text" class="text-[10px] font-bold tracking-widest text-slate-800">RUS</span>
                             <span id="svg-flag" class="text-sm">🇷🇺</span>
@@ -232,165 +253,108 @@ def get_webapp():
                 </div>
             </div>
 
-            <div id="info-box" class="text-center text-xs text-slate-400 hidden">
-                Нажми «Крутить» внизу: первая крутка бесплатная 🎁
+            <div id="info-box" class="text-center text-xs text-amber-400 hidden font-bold">
+                🎉 Поздравляем! Номер добавлен в гараж!
             </div>
 
-            <div class="w-full space-y-3 mt-auto pt-4">
+            <div class="w-full space-y-3 mt-auto pt-6">
                 <div class="flex gap-2">
-                    <button class="bg-slate-800/90 border border-slate-700/80 rounded-xl p-3 flex-1 flex justify-between items-center text-xs font-semibold text-slate-300">
-                        <span>📦 Обычный</span>
-                        <span class="text-slate-500">▼</span>
-                    </button>
-                    <select id="country-select" class="bg-slate-800/90 border border-slate-700/80 rounded-xl p-3 w-28 text-xs font-semibold text-white focus:outline-none focus:border-indigo-500">
-                        <option value="ru">🇷🇺 RU</option>
-                        <option value="ua">🇺🇦 UA</option>
-                        <option value="by">🇧🇾 BY</option>
+                    <select id="country-select" class="w-full bg-slate-800/90 border border-slate-700/80 rounded-xl p-3.5 text-xs font-semibold text-white focus:outline-none">
+                        <option value="ru">🇷🇺 Россия (ГОСТ)</option>
+                        <option value="ua">🇺🇦 Украина (UA-NET)</option>
+                        <option value="by">🇧🇾 Беларусь (BY-GRID)</option>
                     </select>
-                    <button class="bg-slate-800/90 border border-slate-700/80 rounded-xl p-3 px-4 flex items-center justify-center text-slate-300">
-                        📍
-                    </button>
                 </div>
 
-                <button onclick="spin()" class="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black py-4 rounded-xl shadow-lg shadow-orange-950/40 transition flex items-center justify-center gap-2 active:scale-[0.98]">
-                    <span>🎁 Бесплатная крутка • ещё 51</span>
+                <button onclick="spin()" class="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 text-slate-950 font-black py-4 rounded-xl shadow-lg transition flex items-center justify-center gap-2 active:scale-[0.98]">
+                    <span>🎰 Крутить слот (1 000 ₽)</span>
                 </button>
             </div>
         </div>
 
-        <!-- ВКЛАДКА: ПРОФИЛЬ / ЧЕЛОВЕЧЕК (НОВАЯ) -->
-        <div id="tab-profile" class="p-4 hidden flex-1 max-w-md mx-auto w-full space-y-4">
-            <div class="glass-panel p-5 rounded-2xl border border-slate-800 flex items-center gap-4">
-                <div class="w-14 h-14 bg-indigo-600/30 border border-indigo-500/50 rounded-2xl flex items-center justify-center text-2xl text-indigo-300">
-                    👤
-                </div>
-                <div>
-                    <h2 class="text-base font-bold text-white" id="profile-name">Профиль Игрока</h2>
-                    <p class="text-xs text-slate-400">ID: <span id="profile-id">7271568260</span></p>
-                    <span class="inline-block mt-1 bg-amber-500/20 text-amber-300 text-[10px] font-bold px-2 py-0.5 rounded-md border border-amber-500/30">
-                        VIP Коллекционер
-                    </span>
-                </div>
-            </div>
-
-            <!-- БЫСТРЫЕ КНОПКИ МЕНЮ -->
-            <div class="grid grid-cols-2 gap-3">
-                <button onclick="switchTab('garage')" class="glass-panel p-4 rounded-xl border border-slate-800 flex flex-col items-center justify-center gap-1 hover:border-indigo-500/50 transition">
-                    <span class="text-2xl">🚗</span>
-                    <span class="text-xs font-bold text-slate-200">Гараж номеров</span>
-                    <span class="text-[10px] text-slate-400"><span id="profile-garage-count">0</span> номеров</span>
-                </button>
-                
-                <button onclick="switchTab('quests')" class="glass-panel p-4 rounded-xl border border-slate-800 flex flex-col items-center justify-center gap-1 hover:border-indigo-500/50 transition">
-                    <span class="text-2xl">🎯</span>
-                    <span class="text-xs font-bold text-slate-200">Задания и Квесты</span>
-                    <span class="text-[10px] text-amber-400 font-bold">6 доступно</span>
-                </button>
-            </div>
-
-            <!-- СТАТИСТИКАИ -->
-            <div class="glass-panel p-4 rounded-xl border border-slate-800 space-y-3">
-                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Статистика аккаунта</h3>
-                <div class="flex justify-between items-center text-xs">
-                    <span class="text-slate-400">Текущий уровень:</span>
-                    <span class="font-bold text-white">Ур. <span id="profile-level">1</span></span>
-                </div>
-                <div class="flex justify-between items-center text-xs">
-                    <span class="text-slate-400">Баланс рублей:</span>
-                    <span class="font-bold text-emerald-400" id="profile-balance">1 250 000 ₽</span>
-                </div>
-                <div class="flex justify-between items-center text-xs">
-                    <span class="text-slate-400">Пламя / Энергия:</span>
-                    <span class="font-bold text-amber-400">🔥 0</span>
-                </div>
+        <!-- ЭКРАН 3: ГАРАЖ -->
+        <div id="view-garage" class="p-4 hidden flex-col flex-1 max-w-md mx-auto w-full space-y-3">
+            <button onclick="showView('profile')" class="text-xs text-indigo-400 font-bold flex items-center gap-1 mb-1">
+                ← Назад в профиль
+            </button>
+            <h2 class="text-sm font-bold text-slate-200">Гараж номеров</h2>
+            <div id="garage-list" class="space-y-3">
+                <div class="text-center text-slate-500 py-12 text-xs">Гараж пуст. Крутите слоты!</div>
             </div>
         </div>
 
-        <!-- ВКЛАДКА: КВЕСТЫ (НОВАЯ) -->
-        <div id="tab-quests" class="p-4 hidden flex-1 max-w-md mx-auto w-full space-y-3">
-            <h2 class="text-sm font-bold text-slate-200 mb-2">🎯 Квесты: Путь новичка</h2>
+        <!-- ЭКРАН 4: КВЕСТЫ -->
+        <div id="view-quests" class="p-4 hidden flex-col flex-1 max-w-md mx-auto w-full space-y-3">
+            <button onclick="showView('profile')" class="text-xs text-indigo-400 font-bold flex items-center gap-1 mb-1">
+                ← Назад в профиль
+            </button>
+            <h2 class="text-sm font-bold text-slate-200 mb-2">🎯 Путь новичка (0/6)</h2>
             
             <div class="glass-panel p-3.5 rounded-xl border border-slate-800 flex justify-between items-center">
                 <div>
-                    <div class="text-xs font-bold text-slate-200">Сделать первую крутку</div>
-                    <div class="text-[10px] text-emerald-400">+50 000 ₽</div>
+                    <div class="text-xs font-bold text-slate-200">Сделать первую крутку слота</div>
+                    <div class="text-[10px] text-emerald-400">+50 000 ₽ на баланс</div>
                 </div>
-                <button class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-3 py-1.5 rounded-lg text-xs">Выполнить</button>
+                <button class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-3 py-1.5 rounded-lg text-xs">Забрать</button>
             </div>
-
             <div class="glass-panel p-3.5 rounded-xl border border-slate-800 flex justify-between items-center">
                 <div>
-                    <div class="text-xs font-bold text-slate-200">Выбить редкий номер (Зеленый)</div>
+                    <div class="text-xs font-bold text-slate-200">Выбить редкий номер</div>
                     <div class="text-[10px] text-emerald-400">+150 000 ₽</div>
                 </div>
                 <span class="text-xs text-slate-500 font-bold">0/1</span>
             </div>
-
-            <div class="glass-panel p-3.5 rounded-xl border border-slate-800 flex justify-between items-center">
-                <div>
-                    <div class="text-xs font-bold text-slate-200">Продать номер на бирже</div>
-                    <div class="text-[10px] text-emerald-400">+100 000 ₽</div>
-                </div>
-                <span class="text-xs text-slate-500 font-bold">0/1</span>
-            </div>
         </div>
 
-        <!-- ВКЛАДКА 2: ГАРАЖ -->
-        <div id="tab-garage" class="p-4 hidden flex-1 max-w-md mx-auto w-full">
-            <h2 class="text-sm font-bold text-slate-200 mb-4">Ваш гараж номеров</h2>
-            <div id="garage-list" class="space-y-3">
-                <div class="text-center text-slate-500 py-12 text-xs">Гараж пуст. Начните крутить номера!</div>
-            </div>
-        </div>
-
-        <!-- ВКЛАДКА 3: БИРЖА -->
-        <div id="tab-market" class="p-4 hidden flex-1 max-w-md mx-auto w-full">
-            <h2 class="text-sm font-bold text-slate-200 mb-1">Рынок и Биржа</h2>
-            <p class="text-xs text-slate-400 mb-4">Покупайте редкие экземпляры у других игроков.</p>
+        <!-- ЭКРАН 5: БИРЖА -->
+        <div id="view-market" class="p-4 hidden flex-col flex-1 max-w-md mx-auto w-full space-y-3">
+            <button onclick="showView('profile')" class="text-xs text-indigo-400 font-bold flex items-center gap-1 mb-1">
+                ← Назад в профиль
+            </button>
+            <h2 class="text-sm font-bold text-slate-200 mb-1">📈 Глобальная биржа</h2>
             <div id="market-list" class="space-y-3"></div>
         </div>
 
-        <!-- ВКЛАДКА 4: АДМИН-ПАНЕЛЬ -->
-        <div id="tab-admin" class="p-4 hidden flex-1 max-w-md mx-auto w-full">
-            <div class="glass-panel p-5 rounded-2xl border border-rose-500/40">
-                <div class="flex items-center gap-2 mb-4">
+        <!-- ЭКРАН 6: АДМИН-ПАНЕЛЬ -->
+        <div id="view-admin" class="p-4 hidden flex-col flex-1 max-w-md mx-auto w-full space-y-3">
+            <button onclick="showView('profile')" class="text-xs text-indigo-400 font-bold flex items-center gap-1 mb-1">
+                ← Назад в профиль
+            </button>
+            <div class="glass-panel p-5 rounded-2xl border border-rose-500/40 space-y-3">
+                <div class="flex items-center gap-2">
                     <span class="text-xl">👑</span>
                     <h2 class="text-sm font-black text-rose-400">ТЕРМИНАЛ АДМИНИСТРАТОРА</h2>
                 </div>
-                <p class="text-xs text-slate-400 mb-4">Доступ разрешен для ID: <code class="text-rose-300 font-bold">__ADMIN_ID__</code></p>
-                
-                <div class="space-y-3">
-                    <div>
-                        <label class="block text-[10px] text-slate-400 mb-1">ТЕЛЕГРАМ ID ИГРОКА:</label>
-                        <input id="admin-target-id" type="number" value="7271568260" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-white text-xs">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] text-slate-400 mb-1">СУММА В РУБЛЯХ (₽):</label>
-                        <input id="admin-money-amount" type="number" value="500000" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-white text-xs">
-                    </div>
-                    <button onclick="adminGiveMoney()" class="w-full bg-emerald-600/30 border border-emerald-500/60 text-emerald-300 font-bold py-3 rounded-xl text-xs transition">
-                        Начислить рубли по ID
-                    </button>
-
-                    <hr class="border-slate-800 my-2">
-
-                    <div>
-                        <label class="block text-[10px] text-slate-400 mb-1">НОМЕРНОЙ ЗНАК:</label>
-                        <input id="admin-plate-num" type="text" placeholder="А777АА" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-white text-xs mb-2">
-                        <label class="block text-[10px] text-slate-400 mb-1">РЕДКОСТЬ:</label>
-                        <select id="admin-plate-rarity" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-white text-xs mb-3">
-                            <option value="обычный">Обычный (Серый)</option>
-                            <option value="редкий">Редкий (Зеленый)</option>
-                            <option value="сверхредкий">Сверхредкий (Синий)</option>
-                            <option value="легендарный">Легендарный (Желтый)</option>
-                            <option value="мифический">Мифический (Красный)</option>
-                            <option value="мистический">Мистический (Пурпурный)</option>
-                        </select>
-                    </div>
-                    <button onclick="adminGiveCustomPlate()" class="w-full bg-purple-600/30 border border-purple-500/60 text-purple-300 font-bold py-3 rounded-xl text-xs transition">
-                        Выдать кастомный номер
-                    </button>
+                <div>
+                    <label class="block text-[10px] text-slate-400 mb-1">Telegram ID игрока:</label>
+                    <input id="admin-target-id" type="number" value="7271568260" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-white text-xs">
                 </div>
+                <div>
+                    <label class="block text-[10px] text-slate-400 mb-1">Сумма рублей (₽):</label>
+                    <input id="admin-money-amount" type="number" value="500000" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-white text-xs">
+                </div>
+                <button onclick="adminGiveMoney()" class="w-full bg-emerald-600/30 border border-emerald-500/60 text-emerald-300 font-bold py-3 rounded-xl text-xs transition">
+                    Начислить баланс
+                </button>
+
+                <hr class="border-slate-800">
+
+                <div>
+                    <label class="block text-[10px] text-slate-400 mb-1">Кастомный номер:</label>
+                    <input id="admin-plate-num" type="text" placeholder="Х 777 ХХ" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-white text-xs mb-2">
+                    <label class="block text-[10px] text-slate-400 mb-1">Редкость:</label>
+                    <select id="admin-plate-rarity" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-white text-xs mb-3">
+                        <option value="обычный">Обычный (Серый)</option>
+                        <option value="редкий">Редкий (Зеленый)</option>
+                        <option value="сверхредкий">Сверхредкий (Синий)</option>
+                        <option value="легендарный">Легендарный (Желтый)</option>
+                        <option value="мифический">Мифический (Красный)</option>
+                        <option value="мистический">Мистический (Пурпурный)</option>
+                    </select>
+                </div>
+                <button onclick="adminGiveCustomPlate()" class="w-full bg-purple-600/30 border border-purple-500/60 text-purple-300 font-bold py-3 rounded-xl text-xs transition">
+                    Выдать номер в гараж
+                </button>
             </div>
         </div>
 
@@ -401,8 +365,11 @@ def get_webapp():
             const ADMIN_ID = __ADMIN_ID__;
             let currentUserTgId = tg.initDataUnsafe?.user?.id || 7271568260;
 
+            document.getElementById('user-tg-id').innerText = currentUserTgId;
+
             if (currentUserTgId === ADMIN_ID) {
-                document.getElementById('admin-tab-btn').classList.remove('hidden');
+                document.getElementById('admin-badge').classList.remove('hidden');
+                document.getElementById('admin-menu-btn').classList.remove('hidden');
             }
 
             let state = {
@@ -411,8 +378,8 @@ def get_webapp():
                 energy: 0,
                 garage: [],
                 market: [
-                    { id: 1, number: "А777АА", region: "777", title: "🔥 МИФИЧЕСКИЙ НОМЕР", price: 500000, seller: "Игрок #812", rarity: "мифический", color: "red" },
-                    { id: 2, number: "В111ВВ", region: "78", title: "⚡ ЛЕГЕНДАРНЫЙ СЛОТ", price: 250000, seller: "Москвич", rarity: "легендарный", color: "yellow" }
+                    { id: 1, number: "А 777 АА", region: "777", title: "🔥 МИФИЧЕСКИЙ НОМЕР", price: 600000, seller: "CyberLord", color: "red" },
+                    { id: 2, number: "В 111 ВВ", region: "78", title: "⚡ ЛЕГЕНДАРНЫЙ СЛОТ", price: 250000, seller: "Москвич", color: "yellow" }
                 ]
             };
 
@@ -420,26 +387,18 @@ def get_webapp():
                 document.getElementById('balance').innerText = state.balance.toLocaleString('ru-RU') + ' ₽';
                 document.getElementById('level').innerText = state.level;
                 document.getElementById('energy').innerText = state.energy;
-                document.getElementById('garage-count').innerText = state.garage.length;
-                document.getElementById('profile-garage-count').innerText = state.garage.length;
-                document.getElementById('profile-balance').innerText = state.balance.toLocaleString('ru-RU') + ' ₽';
-                document.getElementById('profile-level').innerText = state.level;
+                document.getElementById('menu-garage-count').innerText = state.garage.length;
                 renderGarage();
                 renderMarket();
             }
 
-            function switchTab(tab) {
-                ['game', 'garage', 'quests', 'market', 'profile', 'admin'].forEach(t => {
-                    let el = document.getElementById(`tab-${t}`);
-                    let btn = document.getElementById(`tab-${t}-btn`);
+            function showView(viewName) {
+                ['profile', 'slots', 'garage', 'quests', 'market', 'admin'].forEach(v => {
+                    let el = document.getElementById(`view-${v}`);
                     if (el) el.classList.add('hidden');
-                    if (btn) btn.className = "flex-1 py-2.5 text-center text-slate-400 transition";
                 });
-                
-                let target = document.getElementById(`tab-${tab}`);
+                let target = document.getElementById(`view-${viewName}`);
                 if (target) target.classList.remove('hidden');
-                let activeBtn = document.getElementById(`tab-${tab}-btn`);
-                if (activeBtn) activeBtn.className = "flex-1 py-2.5 text-center text-indigo-400 border-b-2 border-indigo-500 transition font-bold";
             }
 
             function updatePlateVisual(country, numberText, regionText, colorClass) {
@@ -471,16 +430,25 @@ def get_webapp():
             });
 
             async function spin() {
+                if (state.balance < 1000) {
+                    alert('Недостаточно рублей!');
+                    return;
+                }
+                state.balance -= 1000;
+                updateUI();
+
                 let country = document.getElementById('country-select').value;
                 let infoBox = document.getElementById('info-box');
+                infoBox.classList.add('hidden');
 
+                // Анимация роста и перебора цифр
                 let counter = 0;
                 let interval = setInterval(() => {
                     let randNum = Math.floor(100 + Math.random() * 900);
                     updatePlateVisual(country, `Х ${randNum} ХХ`, '99', 'gray');
                     counter++;
-                    if (counter > 10) clearInterval(interval);
-                }, 40);
+                    if (counter > 12) clearInterval(interval);
+                }, 45);
 
                 let response = await fetch(`/api/spin?country=${country}&tier=normal`);
                 if (response.ok) {
@@ -492,14 +460,14 @@ def get_webapp():
                         state.garage.unshift(data);
                         updateUI();
                         tg.HapticFeedback?.notificationOccurred('success');
-                    }, 500);
+                    }, 600);
                 }
             }
 
             function renderGarage() {
                 let list = document.getElementById('garage-list');
                 if (state.garage.length === 0) {
-                    list.innerHTML = '<div class="text-center text-slate-500 py-12 text-xs">Гараж пуст. Начните крутить номера!</div>';
+                    list.innerHTML = '<div class="text-center text-slate-500 py-12 text-xs">Гараж пуст. Крутите слоты!</div>';
                     return;
                 }
                 list.innerHTML = state.garage.map((item, index) => `
@@ -507,7 +475,7 @@ def get_webapp():
                         <div>
                             <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-400">${item.title}</span>
                             <div class="text-base font-plate font-black text-white mt-0.5">${item.number} | ${item.region}</div>
-                            <span class="text-xs text-emerald-400 font-semibold">Цена: ${item.value.toLocaleString('ru-RU')} ₽</span>
+                            <span class="text-xs text-emerald-400 font-semibold">Ценность: ${item.value.toLocaleString('ru-RU')} ₽</span>
                         </div>
                         <div class="flex gap-2">
                             <button onclick="sellItem(${index})" class="bg-emerald-600/20 border border-emerald-500/40 text-emerald-300 px-2.5 py-1.5 rounded-lg text-xs font-bold transition">Продать</button>
@@ -561,7 +529,7 @@ def get_webapp():
             function buyMarketItem(index) {
                 let item = state.market[index];
                 if (state.balance < item.price) {
-                    alert("Недостаточно средств на балансе!");
+                    alert("Недостаточно средств!");
                     return;
                 }
                 state.balance -= item.price;
@@ -576,11 +544,11 @@ def get_webapp():
                 let amount = parseInt(document.getElementById('admin-money-amount').value) || 0;
                 state.balance += amount;
                 updateUI();
-                alert(`Админ: успешно начислено ${amount.toLocaleString('ru-RU')} ₽ для ID ${targetId}!`);
+                alert(`Админ: начислено ${amount.toLocaleString('ru-RU')} ₽ для ID ${targetId}!`);
             }
 
             function adminGiveCustomPlate() {
-                let num = document.getElementById('admin-plate-num').value.trim() || "А777АА";
+                let num = document.getElementById('admin-plate-num').value.trim() || "А 777 АА";
                 let rarity = document.getElementById('admin-plate-rarity').value;
                 
                 let colorMap = { "обычный": "gray", "редкий": "green", "сверхредкий": "blue", "легендарный": "yellow", "мифический": "red", "мистический": "purple" };
@@ -594,7 +562,7 @@ def get_webapp():
                     color: color
                 });
                 updateUI();
-                alert(`Номер "${num}" (${rarity}) успешно выдан в гараж!`);
+                alert(`Номер "${num}" (${rarity}) успешно выдан в ваш гараж!`);
             }
 
             updateUI();
