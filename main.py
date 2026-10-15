@@ -50,7 +50,6 @@ BY_REGIONS = ['1', '2', '3', '4', '5', '6', '7']
 def spin_plates(country: str, tier: str = "normal"):
     roll = random.random()
     
-    # 6 уровней редкости: Обычный -> Редкий -> Сверхредкий -> Легендарный -> Мифический -> Мистический
     if tier == "elite":
         if roll < 0.05:
             rarity, color, title, val_mult = "мистический", "purple", "✨ МИСТИЧЕСКИЙ КВАНТ", 1200000
@@ -151,7 +150,7 @@ def get_webapp():
     </head>
     <body class="min-h-screen flex flex-col select-none pb-24 overflow-x-hidden">
         
-        <!-- ВЕРХНЯЯ ШАПКА КАК НА СКРИНШОТЕ -->
+        <!-- ВЕРХНЯЯ ШАПКА -->
         <header class="bg-slate-900/90 border-b border-slate-800 p-3 flex justify-between items-center sticky top-0 z-50">
             <div class="flex flex-col">
                 <span class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Баланс</span>
@@ -167,6 +166,10 @@ def get_webapp():
                     <span class="text-slate-600">|</span>
                     <span class="flex items-center text-amber-400">🔥 <span id="energy" class="text-white ml-0.5">0</span></span>
                 </div>
+                <!-- КНОПКА С ЧЕЛОВЕЧКОМ (ПРОФИЛЬ И МЕНЮ) -->
+                <button onclick="switchTab('profile')" id="btn-profile" class="bg-indigo-600 hover:bg-indigo-500 p-2 px-3 rounded-xl border border-indigo-400/50 text-white transition flex items-center gap-1 active:scale-95 shadow-md shadow-indigo-950/50">
+                    👤
+                </button>
                 <button onclick="switchTab('garage')" class="bg-slate-800 hover:bg-slate-700 p-2 rounded-xl border border-slate-700 text-slate-200 transition">
                     ☰
                 </button>
@@ -177,13 +180,13 @@ def get_webapp():
         <nav class="flex border-b border-slate-800 bg-slate-900/40 text-xs font-semibold">
             <button onclick="switchTab('game')" id="tab-game-btn" class="flex-1 py-2.5 text-center text-indigo-400 border-b-2 border-indigo-500 transition">🎰 Слоты</button>
             <button onclick="switchTab('garage')" id="tab-garage-btn" class="flex-1 py-2.5 text-center text-slate-400 transition">🚗 Гараж (<span id="garage-count">0</span>)</button>
-            <button onclick="switchTab('market')" id="tab-market-btn" class="flex-1 py-3 text-center text-slate-400 transition">📈 Биржа</button>
+            <button onclick="switchTab('quests')" id="tab-quests-btn" class="flex-1 py-2.5 text-center text-slate-400 transition">🎯 Квесты</button>
+            <button onclick="switchTab('market')" id="tab-market-btn" class="flex-1 py-2.5 text-center text-slate-400 transition">📈 Биржа</button>
         </nav>
 
-        <!-- ВКЛАДКА 1: ИГРОВОЙ ЭКРАН (ТОЧНАЯ КОПИЯ СКРИНШОТА) -->
+        <!-- ВКЛАДКА 1: ИГРОВОЙ ЭКРАН -->
         <div id="tab-game" class="p-4 flex flex-col items-center flex-1 max-w-md mx-auto w-full space-y-3">
             
-            <!-- Инфо-баннер: Страна дня -->
             <div class="w-full bg-slate-900/80 border border-slate-800 rounded-xl p-2.5 text-center shadow-sm">
                 <span class="text-xs text-amber-400 font-bold">🔥 Страна дня: <span id="day-country">Россия</span> • мифик x2</span>
             </div>
@@ -200,7 +203,6 @@ def get_webapp():
                 <div class="text-xs font-bold text-slate-400 bg-slate-800 px-2 py-1 rounded-lg border border-slate-700">0/6</div>
             </div>
 
-            <!-- Ивент Столичный уикенд -->
             <div class="w-full glass-panel rounded-xl p-3 flex justify-between items-center">
                 <div class="flex items-center gap-2.5">
                     <div class="w-8 h-8 rounded-lg bg-blue-500/20 border border-blue-500/40 flex items-center justify-center text-blue-400 font-bold text-xs">📅</div>
@@ -214,16 +216,12 @@ def get_webapp():
 
             <div class="text-center text-xs text-slate-400 pt-1">Крутите номер</div>
 
-            <!-- НОМЕРНОЙ ЗНАК КАК НА СКРИНШОТЕ -->
+            <!-- НОМЕРНОЙ ЗНАК -->
             <div class="w-full flex justify-center my-2">
                 <div id="plate-box" class="relative bg-white text-black border-4 rounded-xl shadow-2xl w-full max-w-[340px] h-28 flex items-center justify-between px-3 overflow-hidden transition-all duration-300 glow-gray">
-                    
-                    <!-- Левая часть (буквы и цифры номера) -->
                     <div class="flex-1 text-center font-plate font-black text-3xl tracking-wider overflow-hidden">
                         <span id="plate-text">? ????? ?</span>
                     </div>
-
-                    <!-- Правая часть (регион, RUS и флаг) -->
                     <div class="border-l-2 border-slate-300 pl-3 flex flex-col items-center justify-center min-w-[70px]">
                         <span id="plate-region" class="text-2xl font-plate font-black leading-none text-slate-900">??</span>
                         <div class="flex items-center gap-1 mt-1">
@@ -231,7 +229,6 @@ def get_webapp():
                             <span id="svg-flag" class="text-sm">🇷🇺</span>
                         </div>
                     </div>
-
                 </div>
             </div>
 
@@ -239,7 +236,6 @@ def get_webapp():
                 Нажми «Крутить» внизу: первая крутка бесплатная 🎁
             </div>
 
-            <!-- НИЖНИЕ СЕЛЕКТОРЫ И КНОПКА КРУТКИ КАК НА СКРИНШОТЕ -->
             <div class="w-full space-y-3 mt-auto pt-4">
                 <div class="flex gap-2">
                     <button class="bg-slate-800/90 border border-slate-700/80 rounded-xl p-3 flex-1 flex justify-between items-center text-xs font-semibold text-slate-300">
@@ -256,10 +252,86 @@ def get_webapp():
                     </button>
                 </div>
 
-                <!-- ГЛАВНАЯ КНОПКА КРУТКИ -->
                 <button onclick="spin()" class="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black py-4 rounded-xl shadow-lg shadow-orange-950/40 transition flex items-center justify-center gap-2 active:scale-[0.98]">
                     <span>🎁 Бесплатная крутка • ещё 51</span>
                 </button>
+            </div>
+        </div>
+
+        <!-- ВКЛАДКА: ПРОФИЛЬ / ЧЕЛОВЕЧЕК (НОВАЯ) -->
+        <div id="tab-profile" class="p-4 hidden flex-1 max-w-md mx-auto w-full space-y-4">
+            <div class="glass-panel p-5 rounded-2xl border border-slate-800 flex items-center gap-4">
+                <div class="w-14 h-14 bg-indigo-600/30 border border-indigo-500/50 rounded-2xl flex items-center justify-center text-2xl text-indigo-300">
+                    👤
+                </div>
+                <div>
+                    <h2 class="text-base font-bold text-white" id="profile-name">Профиль Игрока</h2>
+                    <p class="text-xs text-slate-400">ID: <span id="profile-id">7271568260</span></p>
+                    <span class="inline-block mt-1 bg-amber-500/20 text-amber-300 text-[10px] font-bold px-2 py-0.5 rounded-md border border-amber-500/30">
+                        VIP Коллекционер
+                    </span>
+                </div>
+            </div>
+
+            <!-- БЫСТРЫЕ КНОПКИ МЕНЮ -->
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="switchTab('garage')" class="glass-panel p-4 rounded-xl border border-slate-800 flex flex-col items-center justify-center gap-1 hover:border-indigo-500/50 transition">
+                    <span class="text-2xl">🚗</span>
+                    <span class="text-xs font-bold text-slate-200">Гараж номеров</span>
+                    <span class="text-[10px] text-slate-400"><span id="profile-garage-count">0</span> номеров</span>
+                </button>
+                
+                <button onclick="switchTab('quests')" class="glass-panel p-4 rounded-xl border border-slate-800 flex flex-col items-center justify-center gap-1 hover:border-indigo-500/50 transition">
+                    <span class="text-2xl">🎯</span>
+                    <span class="text-xs font-bold text-slate-200">Задания и Квесты</span>
+                    <span class="text-[10px] text-amber-400 font-bold">6 доступно</span>
+                </button>
+            </div>
+
+            <!-- СТАТИСТИКАИ -->
+            <div class="glass-panel p-4 rounded-xl border border-slate-800 space-y-3">
+                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Статистика аккаунта</h3>
+                <div class="flex justify-between items-center text-xs">
+                    <span class="text-slate-400">Текущий уровень:</span>
+                    <span class="font-bold text-white">Ур. <span id="profile-level">1</span></span>
+                </div>
+                <div class="flex justify-between items-center text-xs">
+                    <span class="text-slate-400">Баланс рублей:</span>
+                    <span class="font-bold text-emerald-400" id="profile-balance">1 250 000 ₽</span>
+                </div>
+                <div class="flex justify-between items-center text-xs">
+                    <span class="text-slate-400">Пламя / Энергия:</span>
+                    <span class="font-bold text-amber-400">🔥 0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ВКЛАДКА: КВЕСТЫ (НОВАЯ) -->
+        <div id="tab-quests" class="p-4 hidden flex-1 max-w-md mx-auto w-full space-y-3">
+            <h2 class="text-sm font-bold text-slate-200 mb-2">🎯 Квесты: Путь новичка</h2>
+            
+            <div class="glass-panel p-3.5 rounded-xl border border-slate-800 flex justify-between items-center">
+                <div>
+                    <div class="text-xs font-bold text-slate-200">Сделать первую крутку</div>
+                    <div class="text-[10px] text-emerald-400">+50 000 ₽</div>
+                </div>
+                <button class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-3 py-1.5 rounded-lg text-xs">Выполнить</button>
+            </div>
+
+            <div class="glass-panel p-3.5 rounded-xl border border-slate-800 flex justify-between items-center">
+                <div>
+                    <div class="text-xs font-bold text-slate-200">Выбить редкий номер (Зеленый)</div>
+                    <div class="text-[10px] text-emerald-400">+150 000 ₽</div>
+                </div>
+                <span class="text-xs text-slate-500 font-bold">0/1</span>
+            </div>
+
+            <div class="glass-panel p-3.5 rounded-xl border border-slate-800 flex justify-between items-center">
+                <div>
+                    <div class="text-xs font-bold text-slate-200">Продать номер на бирже</div>
+                    <div class="text-[10px] text-emerald-400">+100 000 ₽</div>
+                </div>
+                <span class="text-xs text-slate-500 font-bold">0/1</span>
             </div>
         </div>
 
@@ -349,12 +421,15 @@ def get_webapp():
                 document.getElementById('level').innerText = state.level;
                 document.getElementById('energy').innerText = state.energy;
                 document.getElementById('garage-count').innerText = state.garage.length;
+                document.getElementById('profile-garage-count').innerText = state.garage.length;
+                document.getElementById('profile-balance').innerText = state.balance.toLocaleString('ru-RU') + ' ₽';
+                document.getElementById('profile-level').innerText = state.level;
                 renderGarage();
                 renderMarket();
             }
 
             function switchTab(tab) {
-                ['game', 'garage', 'market', 'admin'].forEach(t => {
+                ['game', 'garage', 'quests', 'market', 'profile', 'admin'].forEach(t => {
                     let el = document.getElementById(`tab-${t}`);
                     let btn = document.getElementById(`tab-${t}-btn`);
                     if (el) el.classList.add('hidden');
