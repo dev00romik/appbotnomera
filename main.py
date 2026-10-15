@@ -11,7 +11,7 @@ from aiogram.utils.keyboard import ReplyKeyboardBuilder
 
 BOT_TOKEN = os.getenv("BOT_TOKEN", "8609625925:AAF72Vk5wI1oJJ5_QlztYq6CZqGiZBN3F6w")
 
-# 🔑 НАСТРОЙКИ SUPABASE (Укажите ваши реальные данные или переменные окружения)
+# 🔑 НАШИ ДАННЫЕ SUPABASE
 SUPABASE_URL = "https://gdxoodthdiccoaqfrttg.supabase.co"
 SUPABASE_KEY = "sb_publishable_5MR8eewv0D5h_OnLSfQBSg_Z1If4Xt1"
 
@@ -53,7 +53,6 @@ class SupabaseDB:
 
     @classmethod
     def is_plate_taken(cls, full_code: str) -> bool:
-        """Проверяет, владеет ли кто-то уже таким уникальным номером в мире игры"""
         url = f"{SUPABASE_URL}/rest/v1/active_plates?full_code=eq.{full_code}"
         res = requests.get(url, headers=cls._headers()).json()
         return len(res) > 0
@@ -83,25 +82,21 @@ class SupabaseDB:
 
     @classmethod
     def delete_plate(cls, plate_id: int):
-        """Быстрая продажа системе -> номер удаляется из базы и снова становится доступен для выбивания"""
         url = f"{SUPABASE_URL}/rest/v1/active_plates?id=eq.{plate_id}"
         requests.delete(url, headers=cls._headers())
 
     @classmethod
     def list_plate_on_market(cls, plate_id: int, price: int):
-        """Выставить номер на биржу за свою цену"""
         url = f"{SUPABASE_URL}/rest/v1/active_plates?id=eq.{plate_id}"
         requests.patch(url, headers=cls._headers(), json={"is_on_market": True, "market_price": price})
 
     @classmethod
     def get_market_items(cls):
-        """Получить все лоты живой P2P биржи"""
         url = f"{SUPABASE_URL}/rest/v1/active_plates?is_on_market=eq.true&order=id.desc"
         return requests.get(url, headers=cls._headers()).json()
 
     @classmethod
     def buy_plate_from_market(cls, buyer_id: int, plate_id: int):
-        """Покупка номера у другого игрока"""
         url = f"{SUPABASE_URL}/rest/v1/active_plates?id=eq.{plate_id}&is_on_market=eq.true"
         items = requests.get(url, headers=cls._headers()).json()
         if not items:
@@ -120,7 +115,6 @@ class SupabaseDB:
 
         seller_profile = cls.get_or_create_profile(seller_id)
 
-        # Транзакция: перевод средств и передача прав на номер
         cls.update_profile(buyer_id, {"balance": buyer_profile["balance"] - price})
         cls.update_profile(seller_id, {"balance": seller_profile["balance"] + price})
         
@@ -133,7 +127,7 @@ class SupabaseDB:
         return {"success": True, "message": f"Успешная покупка за {price:,} ₽!"}
 
 # ------------------------------------------------------------------
-# БАЗЫ РЕГИОНОВ И КОДОВ (РОССИЯ, УКРАИНА, БЕЛАРУСЬ)[cite: 2]
+# БАЗЫ РЕГИОНОВ
 # ------------------------------------------------------------------
 RU_LETTERS = ['А', 'В', 'Е', 'К', 'М', 'Н', 'О', 'Р', 'С', 'Т', 'У', 'Х']
 RU_ALL_REGIONS = [
@@ -145,20 +139,12 @@ RU_ALL_REGIONS = [
     '67', '68', '69', '169', '70', '71', '72', '172', '73', '173', '74', '174', '774', '75', '80', '76', '77', '97', '99', '177', '197', '199', '777', '797', '799', '977',
     '78', '98', '178', '198', '79', '83', '86', '186', '87', '89', '92', '94', '95'
 ]
-
-UA_OBLASTS = [
-    'AA', 'KA', 'TT', 'TA', 'AM', 'KM', 'AO', 'KO', 'AP', 'KP', 'AT', 'KT', 'AI', 'KI', 
-    'BA', 'HA', 'BB', 'HB', 'BC', 'HC', 'BE', 'HE', 'BH', 'HH', 'BI', 'HI', 'BK', 'HK', 
-    'BM', 'HM', 'BO', 'HO', 'AX', 'KX', 'BT', 'HT', 'BX', 'HX', 'CA', 'IA', 'CB', 'IB', 
-    'CE', 'IE', 'AE', 'KE', 'AH', 'KH', 'AB', 'KB', 'AC', 'KC', 'CH', 'IH'
-]
+UA_OBLASTS = ['AA', 'KA', 'AM', 'AO', 'AP', 'AT', 'AI', 'BA', 'BB', 'BC', 'HC', 'BE', 'BH', 'BI', 'BK', 'BM', 'BO', 'AX', 'KX', 'BT', 'BX', 'CA', 'CB', 'CE', 'AE', 'KE', 'AH', 'KH', 'AB', 'AC', 'CH', 'IH']
 UA_SUFFIXES = ['AA', 'AB', 'AC', 'AE', 'AH', 'AK', 'AM', 'AO', 'AP', 'AT', 'AX', 'BA', 'BB', 'BC', 'BE', 'BH', 'BI', 'BK', 'BM', 'BO', 'BP', 'BT', 'BX', 'CB', 'CE']
-
-BY_LETTERS = ['AB', 'BM', 'CT', 'MH', 'PB', 'OO', 'AK', 'BI', 'CK', 'EK', 'IB', 'OI']
 BY_REGIONS = ['1', '2', '3', '4', '5', '6', '7']
 
 # ------------------------------------------------------------------
-# TELEGRAM BOT HANDLERS
+# TELEGRAM BOT
 # ------------------------------------------------------------------
 @dp.message(Command("start"))
 async def cmd_start(message: types.Message):
@@ -170,8 +156,8 @@ async def cmd_start(message: types.Message):
     reply_markup = reply_builder.as_markup(resize_keyboard=True)
 
     await message.answer(
-        "🔥 **нАмерок 2100 // Full Cloud Engine** 🔥\n\n"
-        "Загружены все регионы РФ, Украины и Беларуси! Уникальная мировая база номеров и живая биржа активны. Нажмите кнопку ниже!",
+        "🔥 **нАмерок 2100 // Full Cloud Core** 🔥\n\n"
+        "Загружены все регионы, квесты, профиль, админ-панель и облачная база данных! Нажмите кнопку ниже.",
         reply_markup=reply_markup,
         parse_mode="Markdown"
     )
@@ -184,13 +170,10 @@ async def on_startup():
     asyncio.create_task(run_bot())
 
 # ------------------------------------------------------------------
-# API СЛОТЫ И ГЕНЕРАЦИЯ С УНИКАЛЬНОСТЬЮ
+# API СЛОТЫ И ГЕНЕРАЦИЯ
 # ------------------------------------------------------------------
 @app.get("/api/spin")
 def spin_plates(user_id: int, country: str, region: str = "auto", tier: str = "normal"):
-    profile = SupabaseDB.get_or_create_profile(user_id)
-    
-    # Генерация с проверкой глобальной уникальности в Supabase
     max_attempts = 25
     for _ in range(max_attempts):
         roll = random.random()
@@ -223,9 +206,8 @@ def spin_plates(user_id: int, country: str, region: str = "auto", tier: str = "n
         else:
             digits = f"{random.randint(1, 9999):04d}" if rarity in ["обычный", "редкий"] else str(random.choice([7, 5, 9, 1])) * 4
             if len(digits) < 4: digits = digits.zfill(4)
-            let = random.choice(BY_LETTERS)
             reg = region if region != "auto" else random.choice(BY_REGIONS)
-            number_str, region_str = f"{digits} {let}-{reg}", reg
+            number_str, region_str = f"{digits} AB-{reg}", reg
 
         full_code = f"{number_str}_{region_str}"
         if not SupabaseDB.is_plate_taken(full_code):
@@ -268,8 +250,24 @@ def list_on_market(plate_id: int, custom_price: int):
 def buy_from_market(buyer_id: int, plate_id: int):
     return SupabaseDB.buy_plate_from_market(buyer_id, plate_id)
 
+@app.post("/api/admin/give")
+def admin_give(user_id: int, money: int = 0, exp: int = 0):
+    profile = SupabaseDB.get_or_create_profile(user_id)
+    new_balance = profile["balance"] + money
+    new_exp = profile["exp"] + exp
+    new_level = profile["level"]
+    
+    max_exp = new_level * 100
+    if new_exp >= max_exp:
+        new_level += 1
+        new_exp -= max_exp
+        new_balance += new_level * 150000
+
+    SupabaseDB.update_profile(user_id, {"balance": new_balance, "exp": new_exp, "level": new_level})
+    return {"success": True, "profile": {"balance": new_balance, "level": new_level, "exp": new_exp}}
+
 # ------------------------------------------------------------------
-# FRONTEND INTERFACE (GLASSMORPHISM 2.0 + NEON & FULL REGIONS)
+# FRONTEND (HTML + JS + CSS ДИЗАЙН СО ВСЕМИ ВКЛАДКАМИ И КВЕСТАМИ)
 # ------------------------------------------------------------------
 @app.get("/", response_class=HTMLResponse)
 def get_webapp():
@@ -279,7 +277,7 @@ def get_webapp():
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-        <title>нАмерок 2100 // Enterprise Glass & Neon</title>
+        <title>нАмерок 2100 // Ultimate Edition</title>
         <script src="https://telegram.org/js/telegram-web-app.js"></script>
         <script src="https://cdn.tailwindcss.com"></script>
         <style>
@@ -287,14 +285,11 @@ def get_webapp():
             
             :root {
                 --ds-bg-primary: #020617;
-                --ds-surface-glass: rgba(15, 23, 42, 0.82);
+                --ds-surface-glass: rgba(15, 23, 42, 0.85);
                 --ds-border-glass: rgba(255, 255, 255, 0.08);
             }
 
-            * {
-                box-sizing: border-box;
-                -webkit-tap-highlight-color: transparent;
-            }
+            * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
             body {
                 font-family: 'Plus Jakarta Sans', sans-serif;
@@ -352,10 +347,7 @@ def get_webapp():
                 transform: translateY(-140%);
                 opacity: 0;
             }
-            #toast.show {
-                transform: translateY(0);
-                opacity: 1;
-            }
+            #toast.show { transform: translateY(0); opacity: 1; }
 
             select, input {
                 background: rgba(15, 23, 42, 0.9) !important;
@@ -378,39 +370,35 @@ def get_webapp():
         <header class="glass-panel border-b border-slate-800/80 p-3.5 flex justify-between items-center sticky top-0 z-40">
             <div class="flex flex-col">
                 <span class="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Облачный баланс</span>
-                <span id="balance" class="font-mono font-black text-lg text-emerald-400 tracking-tight">1 250 000 ₽</span>
+                <span id="balance" class="font-mono font-black text-lg text-emerald-400 tracking-tight">0 ₽</span>
             </div>
             
             <div class="flex items-center gap-2">
                 <div class="text-xs glass-panel px-3 py-1.5 rounded-xl text-slate-300 font-bold flex items-center gap-1.5">
                     <span>Ур. <span id="level" class="text-indigo-400">1</span></span>
+                    <span class="text-slate-600">|</span>
+                    <span class="text-[10px] text-slate-400"><span id="exp">0</span>/<span id="max-exp">100</span> EXP</span>
                 </div>
-                <button onclick="showView('garage')" class="cyber-btn p-2.5 px-3.5 rounded-xl text-white font-bold text-xs">🚗 Гараж</button>
-                <button onclick="showView('market')" class="gold-btn text-slate-950 p-2.5 px-3.5 rounded-xl font-bold text-xs">📈 Биржа</button>
+                <button onclick="showView('profile')" class="cyber-btn p-2.5 px-3.5 rounded-xl text-white font-bold text-xs">👤 Меню</button>
             </div>
         </header>
 
-        <!-- ЭКРАН СЛОТОВ -->
+        <!-- ЭКРАН 1: СЛОТЫ -->
         <div id="view-slots" class="p-4 flex flex-col flex-1 max-w-md mx-auto w-full space-y-4">
-            
             <div class="glass-panel rounded-2xl p-3 text-center flex justify-between items-center px-4 border border-indigo-500/20">
                 <span class="text-xs text-amber-400 font-bold">🔥 Все регионы и областя активны</span>
                 <span class="text-[9px] bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2.5 py-1 rounded-lg font-black">CLOUD</span>
             </div>
 
-            <!-- АНИМИРОВАННЫЙ НОМЕРНОЙ ЗНАК -->
             <div class="w-full flex justify-center my-3">
                 <div id="plate-box" class="relative bg-white text-black border-4 rounded-2xl shadow-2xl w-full max-w-[340px] h-32 flex items-center justify-between px-3.5 overflow-hidden transition-all duration-300 glow-gray">
-                    
                     <div id="ua-badge" class="hidden absolute left-0 top-0 bottom-0 bg-[#0057b7] text-white w-7 flex flex-col items-center justify-center border-r border-slate-300">
                         <div class="w-4 h-3 bg-[#ffd700] rounded-sm mb-1 shadow-sm"></div>
                         <span class="text-[9px] font-black tracking-widest text-white">UA</span>
                     </div>
-
                     <div id="plate-content-box" class="flex-1 flex items-center justify-center font-plate font-black text-2xl tracking-widest overflow-hidden">
                         <span id="plate-text">А 777 АА</span>
                     </div>
-
                     <div id="region-block" class="border-l-2 border-slate-300 pl-3 flex flex-col items-center justify-center min-w-[70px]">
                         <span id="plate-region" class="text-2xl font-plate font-black leading-none text-slate-900">777</span>
                         <div class="flex items-center gap-1 mt-1.5">
@@ -418,7 +406,6 @@ def get_webapp():
                             <div id="svg-flag-box" class="w-5 h-3.5 rounded-sm overflow-hidden border border-slate-400 shadow-sm flex items-center justify-center"></div>
                         </div>
                     </div>
-
                 </div>
             </div>
 
@@ -427,7 +414,6 @@ def get_webapp():
                 <p class="text-xs text-slate-300 mt-1">ЦЕННОСТЬ: <span id="res-val" class="text-emerald-400 font-black text-sm">0</span> ₽</p>
             </div>
 
-            <!-- УПРАВЛЕНИЕ -->
             <div class="w-full space-y-3.5 mt-auto pt-2">
                 <div>
                     <label class="block text-[10px] text-slate-400 mb-1 font-bold">ТИП КОНТЕЙНЕРА:</label>
@@ -443,9 +429,7 @@ def get_webapp():
                         <option value="ua">🇺🇦 Украина</option>
                         <option value="by">🇧🇾 Беларусь</option>
                     </select>
-
-                    <select id="region-select" class="rounded-2xl p-3.5 text-xs font-bold text-white focus:outline-none flex-1">
-                    </select>
+                    <select id="region-select" class="rounded-2xl p-3.5 text-xs font-bold text-white focus:outline-none flex-1"></select>
                 </div>
 
                 <button onclick="spin()" class="w-full gold-btn text-slate-950 font-black py-4 rounded-2xl transition flex items-center justify-center gap-2">
@@ -454,32 +438,119 @@ def get_webapp():
             </div>
         </div>
 
-        <!-- ГАРАЖ -->
-        <div id="view-garage" class="p-4 hidden flex-col max-w-md mx-auto w-full space-y-3">
-            <button onclick="showView('slots')" class="text-xs text-indigo-400 font-bold mb-2">← Назад к слотам</button>
-            <h2 class="text-sm font-extrabold text-white">Ваш личный гараж (Облако)</h2>
+        <!-- ЭКРАН 2: МЕНЮ ПРОФИЛЯ -->
+        <div id="view-profile" class="p-4 hidden flex-col flex-1 max-w-md mx-auto w-full space-y-4">
+            <button onclick="showView('slots')" class="text-xs text-indigo-400 font-bold flex items-center gap-1 mb-1">← Назад к слотам</button>
+
+            <div class="glass-panel p-5 rounded-3xl border border-slate-800 flex items-center justify-between">
+                <div class="flex items-center gap-3.5">
+                    <div class="w-14 h-14 bg-indigo-600/20 border border-indigo-500/40 rounded-2xl flex items-center justify-center text-2xl text-indigo-300 font-bold">👤</div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h2 class="text-sm font-extrabold text-white">Агент мегаполиса</h2>
+                            <span id="admin-status-badge" class="hidden bg-rose-600 text-white text-[9px] font-black px-2.5 py-0.5 rounded-lg">⚡ АДМИН</span>
+                        </div>
+                        <p class="text-[11px] text-slate-400 mt-0.5">ID: <span id="user-tg-id">7271568260</span></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3.5">
+                <button onclick="showView('garage')" class="glass-panel p-5 rounded-3xl border border-slate-800 flex flex-col items-center justify-center gap-2 hover:border-slate-600 transition">
+                    <span class="text-3xl">🚗</span>
+                    <span class="text-xs font-extrabold text-white">Гараж</span>
+                    <span class="text-[10px] text-indigo-400 font-bold"><span id="menu-garage-count">0</span> ед.</span>
+                </button>
+
+                <button onclick="showView('quests')" class="glass-panel p-5 rounded-3xl border border-slate-800 flex flex-col items-center justify-center gap-2 hover:border-slate-600 transition">
+                    <span class="text-3xl">🎯</span>
+                    <span class="text-xs font-extrabold text-white">Квесты</span>
+                    <span class="text-[10px] text-amber-400 font-bold">Награды</span>
+                </button>
+
+                <button onclick="showView('market')" class="glass-panel p-5 rounded-3xl border border-slate-800 flex flex-col items-center justify-center gap-2 hover:border-slate-600 transition">
+                    <span class="text-3xl">📈</span>
+                    <span class="text-xs font-extrabold text-white">Биржа</span>
+                    <span class="text-[10px] text-emerald-400 font-bold">Аукцион</span>
+                </button>
+
+                <button onclick="showView('slots')" class="glass-panel p-5 rounded-3xl border border-indigo-500/30 bg-indigo-950/20 flex flex-col items-center justify-center gap-2 hover:border-indigo-400 transition">
+                    <span class="text-3xl">🎰</span>
+                    <span class="text-xs font-extrabold text-white">Слоты</span>
+                    <span class="text-[10px] text-indigo-300 font-bold">Играть</span>
+                </button>
+            </div>
+
+            <button id="admin-menu-btn" onclick="showView('admin')" class="hidden w-full bg-rose-600/20 border border-rose-500/50 text-rose-300 font-extrabold py-4 rounded-2xl text-xs flex items-center justify-center gap-2">
+                👑 Терминал Администратора
+            </button>
+        </div>
+
+        <!-- ЭКРАН 3: ГАРАЖ -->
+        <div id="view-garage" class="p-4 hidden flex-col flex-1 max-w-md mx-auto w-full space-y-3">
+            <button onclick="showView('profile')" class="text-xs text-indigo-400 font-bold flex items-center gap-1 mb-1">← Назад в меню</button>
+            <h2 class="text-sm font-extrabold text-white">Личный гараж номеров</h2>
             <div id="garage-list" class="space-y-3"></div>
         </div>
 
-        <!-- БИРЖА ИГРОКОВ -->
-        <div id="view-market" class="p-4 hidden flex-col max-w-md mx-auto w-full space-y-3">
-            <button onclick="showView('slots')" class="text-xs text-indigo-400 font-bold mb-2">← Назад к слотам</button>
-            <h2 class="text-sm font-extrabold text-white">📈 Живая биржа игроков</h2>
+        <!-- ЭКРАН 4: КВЕСТЫ -->
+        <div id="view-quests" class="p-4 hidden flex-col flex-1 max-w-md mx-auto w-full space-y-3">
+            <button onclick="showView('profile')" class="text-xs text-indigo-400 font-bold flex items-center gap-1 mb-1">← Назад в меню</button>
+            <h2 class="text-sm font-extrabold text-white mb-2">🎯 Активные квесты</h2>
+            <div id="quests-list" class="space-y-3">
+                <div class="glass-panel p-4 rounded-2xl border border-slate-800 flex justify-between items-center">
+                    <div>
+                        <div class="text-xs font-extrabold text-slate-100">Сделать 3 крутки слота</div>
+                        <div class="text-[10px] text-emerald-400 font-bold mt-0.5">+100 000 ₽ • +50 EXP</div>
+                    </div>
+                    <button onclick="completeQuest(1, 100000, 50)" class="bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold px-3.5 py-2 rounded-xl text-xs">Забрать</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ЭКРАН 5: БИРЖА -->
+        <div id="view-market" class="p-4 hidden flex-col flex-1 max-w-md mx-auto w-full space-y-3">
+            <button onclick="showView('profile')" class="text-xs text-indigo-400 font-bold flex items-center gap-1 mb-1">← Назад в меню</button>
+            <h2 class="text-sm font-extrabold text-white mb-1">📈 Мегаполисная биржа игроков</h2>
             <div id="market-list" class="space-y-3"></div>
         </div>
 
-        <!-- МОДАЛКА ВЫСТАВЛЕНИЯ НА БИРЖУ С КАСТОМНОЙ ЦЕНОЙ -->
+        <!-- ЭКРАН 6: АДМИН-ПАНЕЛЬ -->
+        <div id="view-admin" class="p-4 hidden flex-col flex-1 max-w-md mx-auto w-full space-y-3">
+            <button onclick="showView('profile')" class="text-xs text-indigo-400 font-bold flex items-center gap-1 mb-1">← Назад в меню</button>
+            <div class="glass-panel p-5 rounded-3xl border border-rose-500/40 space-y-3.5">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xl">👑</span>
+                        <h2 class="text-sm font-black text-rose-400">ТЕРМИНАЛ АДМИНА</h2>
+                    </div>
+                    <span class="bg-rose-600/30 border border-rose-500 text-rose-300 text-[9px] font-black px-2.5 py-0.5 rounded">⚡ ROOT</span>
+                </div>
+                
+                <div class="space-y-3 pt-1">
+                    <div>
+                        <label class="block text-[10px] text-slate-400 mb-1 font-bold">Сумма (₽):</label>
+                        <input id="admin-money-amount" type="number" value="500000" class="w-full rounded-2xl p-3 text-white text-xs">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-slate-400 mb-1 font-bold">Опыт (EXP):</label>
+                        <input id="admin-exp-amount" type="number" value="100" class="w-full rounded-2xl p-3 text-white text-xs">
+                    </div>
+                    <button onclick="adminExecute()" class="w-full bg-emerald-600/30 border border-emerald-500/60 text-emerald-300 font-extrabold py-3.5 rounded-2xl text-xs">Выдать ресурсы в облако</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- МОДАЛКА БИРЖИ -->
         <div id="sell-modal" class="hidden fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
             <div class="glass-panel p-6 rounded-3xl max-w-sm w-full space-y-4 text-center border border-amber-500/50">
                 <h3 class="text-base font-black text-amber-400">ПРОДАЖА НА БИРЖЕ</h3>
-                <p class="text-xs text-slate-300">Укажите вашу личную цену в рублях для продажи этого номера:</p>
+                <p class="text-xs text-slate-300">Укажите вашу личную цену в рублях:</p>
                 <div id="modal-sell-plate-name" class="font-plate text-lg font-black text-white"></div>
-                
-                <input id="custom-price-input" type="number" placeholder="Цена в ₽" class="w-full rounded-2xl p-3.5 text-center text-emerald-400 font-extrabold text-sm focus:outline-none">
-                
+                <input id="custom-price-input" type="number" placeholder="Цена в ₽" class="w-full rounded-2xl p-3.5 text-center text-emerald-400 font-extrabold text-sm">
                 <div class="flex gap-3 pt-2">
-                    <button onclick="confirmMarketSell()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold py-3.5 rounded-2xl text-xs">Выставить</button>
-                    <button onclick="closeSellModal()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-white font-extrabold py-3.5 rounded-2xl text-xs">Отмена</button>
+                    <button onclick="confirmMarketSell()" class="flex-1 bg-emerald-600 text-white font-extrabold py-3.5 rounded-2xl text-xs">Выставить</button>
+                    <button onclick="closeSellModal()" class="flex-1 bg-slate-800 text-white font-extrabold py-3.5 rounded-2xl text-xs">Отмена</button>
                 </div>
             </div>
         </div>
@@ -488,13 +559,15 @@ def get_webapp():
             let tg = window.Telegram.WebApp;
             tg.expand();
 
+            const ADMIN_ID = __ADMIN_ID__;
             let userId = tg.initDataUnsafe?.user?.id || 7271568260;
             let currentData = { profile: {}, garage: [], market: [] };
             let selectedPlateForMarket = null;
 
-            const RU_REGIONS = ['77', '99', '177', '199', '777', '799', '78', '98', '178', '198', '50', '90', '150', '161', '125', '23', '93', '123', '16', '116', '716', '02', '102', '25', '63', '66', '36', '52', '61', '34', '54'];
-            const UA_OBLASTS = ['AA', 'KA', 'AM', 'AO', 'AP', 'AT', 'AI', 'BA', 'BB', 'BC', 'HC', 'BE', 'BH', 'BI', 'BK', 'BM', 'BO', 'AX', 'KX', 'BT', 'BX', 'CA', 'CB', 'CE', 'AE', 'KE', 'AH', 'KH', 'AB', 'AC'];
-            const BY_REGIONS = ['1', '2', '3', '4', '5', '6', '7'];
+            if (userId === ADMIN_ID) {
+                document.getElementById('admin-status-badge').classList.remove('hidden');
+                document.getElementById('admin-menu-btn').classList.remove('hidden');
+            }
 
             function showToast(msg, icon = "⚡") {
                 let toast = document.getElementById('toast');
@@ -508,15 +581,17 @@ def get_webapp():
                 let res = await fetch(`/api/user/data?user_id=${userId}`);
                 if (res.ok) {
                     currentData = await res.json();
-                    document.getElementById('balance').innerText = currentData.profile.balance.toLocaleString('ru-RU') + ' ₽';
-                    document.getElementById('level').innerText = currentData.profile.level;
+                    document.getElementById('balance').innerText = (currentData.profile.balance || 0).toLocaleString('ru-RU') + ' ₽';
+                    document.getElementById('level').innerText = currentData.profile.level || 1;
+                    document.getElementById('exp').innerText = currentData.profile.exp || 0;
+                    document.getElementById('menu-garage-count').innerText = currentData.garage.length;
                     renderGarage();
                     renderMarket();
                 }
             }
 
             function showView(viewName) {
-                ['slots', 'garage', 'market'].forEach(v => {
+                ['slots', 'profile', 'garage', 'quests', 'market', 'admin'].forEach(v => {
                     let el = document.getElementById(`view-${v}`);
                     if (el) el.classList.add('hidden');
                 });
@@ -541,7 +616,6 @@ def get_webapp():
                 } else {
                     regionBlock.classList.remove('hidden');
                     uaBadge.classList.add('hidden');
-
                     if (country === 'ru') {
                         codeText.innerText = 'RUS';
                         svgBox.innerHTML = '<svg class="w-full h-full" viewBox="0 0 36 24"><rect width="36" height="8" fill="#fff"/><rect y="8" width="36" height="8" fill="#0039a6"/><rect y="16" width="36" height="8" fill="#d52b1e"/></svg>';
@@ -592,8 +666,8 @@ def get_webapp():
                             <div class="text-xs text-emerald-400 font-bold">Оценка: ${item.value_amount.toLocaleString('ru-RU')} ₽</div>
                         </div>
                         <div class="flex gap-2">
-                            <button onclick="quickSell(${item.id}, ${item.value_amount})" class="bg-emerald-600/20 text-emerald-300 border border-emerald-500/40 px-3 py-1.5 rounded-xl text-xs font-bold">Продать системе</button>
-                            <button onclick="openSellModal(${item.id}, '${item.number_str}', '${item.region_str}', ${item.value_amount})" class="cyber-btn text-white px-3 py-1.5 rounded-xl text-xs font-bold">На биржу</button>
+                            <button onclick="quickSell(${item.id}, ${item.value_amount})" class="bg-emerald-600/20 text-emerald-300 border border-emerald-500/40 px-3 py-1.5 rounded-xl text-xs font-bold">Продать</button>
+                            <button onclick="openSellModal(${item.id}, '${item.number_str}', '${item.region_str}', ${item.value_amount})" class="cyber-btn text-white px-3 py-1.5 rounded-xl text-xs font-bold">Биржа</button>
                         </div>
                     </div>
                 `).join('');
@@ -602,7 +676,7 @@ def get_webapp():
             async function quickSell(plateId, value) {
                 let res = await fetch(`/api/user/quick_sell?user_id=${userId}&plate_id=${plateId}&price=${value}`, {method: 'POST'});
                 if (res.ok) {
-                    showToast(`Продано! Номер снова доступен в мире игры. +${value.toLocaleString('ru-RU')} ₽`, "💰");
+                    showToast(`Продано! Номер свободен в мире. +${value.toLocaleString('ru-RU')} ₽`, "💰");
                     loadUserData();
                 }
             }
@@ -614,16 +688,14 @@ def get_webapp():
                 document.getElementById('sell-modal').classList.remove('hidden');
             }
 
-            function closeSellModal() {
-                document.getElementById('sell-modal').classList.add('hidden');
-            }
+            function closeSellModal() { document.getElementById('sell-modal').classList.add('hidden'); }
 
             async function confirmMarketSell() {
                 let price = parseInt(document.getElementById('custom-price-input').value) || 1000;
                 let res = await fetch(`/api/market/list?plate_id=${selectedPlateForMarket}&custom_price=${price}`, {method: 'POST'});
                 if (res.ok) {
                     closeSellModal();
-                    showToast(`Лот выставлен на биржу за ${price.toLocaleString('ru-RU')} ₽!`, "📈");
+                    showToast(`Лот выставлен за ${price.toLocaleString('ru-RU')} ₽!`, "📈");
                     loadUserData();
                 }
             }
@@ -631,7 +703,7 @@ def get_webapp():
             function renderMarket() {
                 let list = document.getElementById('market-list');
                 if (!currentData.market || currentData.market.length === 0) {
-                    list.innerHTML = '<div class="text-center text-slate-500 py-8 text-xs">На бирже пока нет лотов от игроков.</div>';
+                    list.innerHTML = '<div class="text-center text-slate-500 py-8 text-xs">На бирже нет лотов.</div>';
                     return;
                 }
                 list.innerHTML = currentData.market.map((item) => `
@@ -642,10 +714,7 @@ def get_webapp():
                             <div class="text-emerald-400 font-black text-xs mt-1">${item.market_price.toLocaleString('ru-RU')} ₽</div>
                         </div>
                         <div>
-                            ${item.owner_id !== userId 
-                                ? `<button onclick="buyMarketItem(${item.id})" class="cyber-btn text-white px-3.5 py-2 rounded-xl text-xs font-bold">Купить</button>`
-                                : `<span class="text-[10px] text-slate-500 font-bold">Ваш лот</span>`
-                            }
+                            ${item.owner_id !== userId ? `<button onclick="buyMarketItem(${item.id})" class="cyber-btn text-white px-3.5 py-2 rounded-xl text-xs font-bold">Купить</button>` : `<span class="text-[10px] text-slate-500 font-bold">Ваш лот</span>`}
                         </div>
                     </div>
                 `).join('');
@@ -660,21 +729,38 @@ def get_webapp():
                 }
             }
 
+            async function adminExecute() {
+                let money = parseInt(document.getElementById('admin-money-amount').value) || 0;
+                let exp = parseInt(document.getElementById('admin-exp-amount').value) || 0;
+                let res = await fetch(`/api/admin/give?user_id=${userId}&money=${money}&exp=${exp}`, {method: 'POST'});
+                if (res.ok) {
+                    showToast("Ресурсы успешно выданы через ROOT терминал!", "👑");
+                    loadUserData();
+                }
+            }
+
+            function completeQuest(id, money, exp) {
+                adminExecuteCustomDirect(money, exp);
+                showToast(`Квест выполнен! Награда: +${money.toLocaleString('ru-RU')} ₽`, "🎯");
+            }
+
+            async function adminExecuteCustomDirect(money, exp) {
+                await fetch(`/api/admin/give?user_id=${userId}&money=${money}&exp=${exp}`, {method: 'POST'});
+                loadUserData();
+            }
+
             function onCountryChange() {
                 let country = document.getElementById('country-select').value;
                 let regionSelect = document.getElementById('region-select');
                 regionSelect.innerHTML = '';
-                let list = country === 'ru' ? RU_REGIONS : (country === 'ua' ? UA_OBLASTS : BY_REGIONS);
-                
+                let list = country === 'ru' ? ['77', '99', '777', '78', '50', '199'] : (country === 'ua' ? ['AA', 'KA', 'BC', 'BH'] : ['1', '2', '7']);
                 let defaultOpt = document.createElement('option');
                 defaultOpt.value = "auto";
                 defaultOpt.innerText = country === 'ua' ? "🎲 Любая область" : "🎲 Любой регион";
                 regionSelect.appendChild(defaultOpt);
-
                 list.forEach(r => {
                     let opt = document.createElement('option');
-                    opt.value = r;
-                    opt.innerText = country === 'ua' ? `Область ${r}` : `Регион ${r}`;
+                    opt.value = r; opt.innerText = `Регион ${r}`;
                     regionSelect.appendChild(opt);
                 });
                 updatePlateVisual(country, country === 'ua' ? 'AA 7777 AB' : 'А 777 АА', list[0], 'yellow');
