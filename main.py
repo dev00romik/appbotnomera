@@ -28,7 +28,7 @@ async def cmd_start(message: types.Message):
     )
     await message.answer(
         "🔥 **нАмерок 2100 // Официальный клиент** 🔥\n\n"
-        "Крути госномера всех регионов России, Украины и Беларуси, прокачивай уровень, торгуй на бирже и открывай редчайшие мифические знаки!",
+        "Крути госномера Украины, России и Беларуси, прокачивай уровень, торгуй на бирже и открывай редчайшие мифические знаки!",
         reply_markup=builder.as_markup(),
         parse_mode="Markdown"
     )
@@ -40,19 +40,14 @@ async def on_startup():
         await dp.start_polling(bot)
     asyncio.create_task(run_bot())
 
-# Полные списки букв и регионов
+# Базы букв и областей
 RU_LETTERS = ['А', 'В', 'Е', 'К', 'М', 'Н', 'О', 'Р', 'С', 'Т', 'У', 'Х']
-RU_ALL_REGIONS = [
-    '77', '99', '177', '199', '777', '799', '78', '98', '178', '198', 
-    '50', '90', '150', '190', '750', '161', '761', '102', '702', '116', '716',
-    '23', '93', '123', '193', '25', '125', '36', '136', '63', '163', '66', '96', '196'
-]
+RU_ALL_REGIONS = ['77', '99', '177', '199', '777', '799', '78', '98', '178', '198', '50', '90', '150', '161', '125']
 
-UA_SERIES = [
-    'AA', 'KA', 'BC', 'HC', 'AE', 'BH', 'BI', 'AX', 'AP', 'CB', 'AM', 'AO', 'BX', 'CH', 'DP'
-]
+UA_OBLASTS = ['AA', 'KA', 'BC', 'HC', 'AE', 'BH', 'BI', 'AX', 'AP', 'CB', 'AM', 'AO', 'BX']
+UA_SUFFIXES = ['AA', 'AB', 'AC', 'BA', 'BB', 'BX', 'CB', 'CE']
 
-BY_LETTERS = ['AB', 'BM', 'CT', 'MH', 'PB', 'OO', 'AK', 'BI', 'CK']
+BY_LETTERS = ['AB', 'BM', 'CT', 'MH', 'PB', 'OO', 'AK', 'BI']
 BY_REGIONS = ['1', '2', '3', '4', '5', '6', '7']
 
 @app.get("/api/spin")
@@ -95,21 +90,17 @@ def spin_plates(country: str, region: str = "auto", tier: str = "normal"):
         number_str = f"{l1} {digits} {l23}"
         region_str = reg
     elif country == "ua":
-        series = region if region != "auto" else random.choice(UA_SERIES)
+        oblast = region if region != "auto" else random.choice(UA_OBLASTS)
         digits = f"{random.randint(1, 9999):04d}" if rarity in ["обычный", "редкий"] else str(random.choice([1, 7, 9])) * 4
-        suf = random.choice(['AA', 'AB', 'BA', 'BX', 'CB'])
-        number_str = f"{series} {digits} {suf}"
+        suf = random.choice(UA_SUFFIXES)
+        number_str = f"{oblast} {digits} {suf}"
         region_str = "UA"
     else:
-        digits = f"{random.randint(1, 9999):04d}"
+        digits = f"{random.randint(1, 9999):04d}" if rarity in ["обычный", "редкий"] else str(random.choice([7, 5, 9])) * 4
         let = random.choice(BY_LETTERS)
         reg = region if region != "auto" else random.choice(BY_REGIONS)
-        number_str = f"{digits} {let}"
+        number_str = f"{digits} {let}-{reg}"
         region_str = reg
-
-    # Добавочная стоимость за престижные регионы
-    if region_str in ['777', '799', '199', '77', 'AA', 'KA', '7']:
-        val_mult = int(val_mult * 1.3)
 
     return {
         "number": number_str,
@@ -153,7 +144,7 @@ def get_webapp():
             @keyframes blueGlow { 0%, 100% { border-color: #3b82f6; box-shadow: 0 0 15px rgba(59,130,246,0.5); } 50% { border-color: #60a5fa; box-shadow: 0 0 30px rgba(59,130,246,0.9); } }
             @keyframes yellowGlow { 0%, 100% { border-color: #eab308; box-shadow: 0 0 20px rgba(234,179,8,0.6); } 50% { border-color: #facc15; box-shadow: 0 0 40px rgba(234,179,8,1); } }
             @keyframes redGlow { 0%, 100% { border-color: #ef4444; box-shadow: 0 0 25px rgba(239,68,68,0.7); } 50% { border-color: #f87171; box-shadow: 0 0 45px rgba(239,68,68,1); } }
-            @keyframes purpleGlow { 0%, 100% { border-color: #a855f7; box-shadow: 0 0 30px rgba(168,85,247,0.8); filter: hue-rotate(0deg); } 50% { border-color: #ec4899; box-shadow: 0 0 60px rgba(236,72,153,1); filter: hue-rotate(90deg); } }
+            @keyframes purpleGlow { 0%, 100% { border-color: #a855f7; box-shadow: 0 0 30px rgba(168,85,247,0.8); } 50% { border-color: #ec4899; box-shadow: 0 0 60px rgba(236,72,153,1); } }
 
             .glow-gray { animation: grayGlow 3s infinite; }
             .glow-green { animation: greenGlow 2s infinite; }
@@ -162,23 +153,33 @@ def get_webapp():
             .glow-red { animation: redGlow 1s infinite; }
             .glow-purple { animation: purpleGlow 0.8s infinite; }
 
-            .balance-pop {
-                animation: pop 0.4s ease-out;
+            /* Внутриигровое всплывающее уведомление */
+            #toast {
+                transition: all 0.3s ease;
+                transform: translateY(-100%);
+                opacity: 0;
             }
-            @keyframes pop {
-                0% { transform: scale(1); }
-                50% { transform: scale(1.15); color: #34d399; }
-                100% { transform: scale(1); }
+            #toast.show {
+                transform: translateY(0);
+                opacity: 1;
             }
         </style>
     </head>
     <body class="min-h-screen flex flex-col select-none pb-8 overflow-x-hidden">
         
+        <!-- ИГРОВОЙ TOAST (УВЕДОМЛЕНИЕ) -->
+        <div id="toast" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 pointer-events-none w-11/12 max-w-md">
+            <div id="toast-body" class="bg-slate-900/95 border border-indigo-500/50 p-3.5 rounded-2xl shadow-2xl flex items-center gap-3 backdrop-blur-md">
+                <span id="toast-icon" class="text-xl">🔔</span>
+                <span id="toast-msg" class="text-xs font-bold text-slate-100 flex-1">Сообщение</span>
+            </div>
+        </div>
+
         <!-- ВЕРХНЯЯ ШАПКА -->
-        <header class="bg-slate-900/90 border-b border-slate-800 p-3 flex justify-between items-center sticky top-0 z-50">
+        <header class="bg-slate-900/90 border-b border-slate-800 p-3 flex justify-between items-center sticky top-0 z-40">
             <div class="flex flex-col">
                 <span class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Баланс</span>
-                <span id="balance" class="font-mono font-black text-lg text-emerald-400 transition-all duration-300">1 250 000 ₽</span>
+                <span id="balance" class="font-mono font-black text-lg text-emerald-400">1 250 000 ₽</span>
             </div>
             
             <div class="flex items-center gap-2">
@@ -187,13 +188,13 @@ def get_webapp():
                     <span class="text-slate-600">|</span>
                     <span class="text-[10px] text-indigo-400"><span id="exp">0</span>/100 EXP</span>
                 </div>
-                <button onclick="showView('profile')" class="bg-indigo-600 hover:bg-indigo-500 p-2 px-3 rounded-xl border border-indigo-400/50 text-white transition flex items-center gap-1 active:scale-95 shadow-md shadow-indigo-950/50">
+                <button onclick="showView('profile')" class="bg-indigo-600 hover:bg-indigo-500 p-2 px-3 rounded-xl border border-indigo-400/50 text-white transition flex items-center gap-1 active:scale-95 shadow-md">
                     👤 Меню
                 </button>
             </div>
         </header>
 
-        <!-- ЭКРАН 1: СЛОТЫ И КРУТКА (ВСТРЕЧАЕТ СРАЗУ) -->
+        <!-- ЭКРАН 1: СЛОТЫ И КРУТКА -->
         <div id="view-slots" class="p-4 flex flex-col flex-1 max-w-md mx-auto w-full space-y-4">
             
             <div class="w-full bg-slate-900/80 border border-slate-800 rounded-xl p-2.5 text-center flex justify-between items-center px-4">
@@ -201,38 +202,40 @@ def get_webapp():
                 <span class="text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded font-bold">БОНУС</span>
             </div>
 
-            <div class="text-center text-xs text-slate-400 pt-1">Сгенерируйте уникальный госавтономер</div>
-
-            <!-- НОМЕРНОЙ ЗНАК С ГРАФИЧЕСКИМ SVG ФЛАГОМ -->
+            <!-- РЕАЛИСТИЧНЫЙ НОМЕРНОЙ ЗНАК С УЧЕТОМ СТРАНЫ -->
             <div class="w-full flex justify-center my-2">
                 <div id="plate-box" class="relative bg-white text-black border-4 rounded-xl shadow-2xl w-full max-w-[340px] h-28 flex items-center justify-between px-3 overflow-hidden transition-all duration-300 glow-gray">
                     
-                    <!-- БУКВЫ И ЦИФРЫ (СЛЕВА) -->
-                    <div class="flex-1 text-center font-plate font-black text-3xl tracking-wider overflow-hidden">
+                    <!-- БУКВЫ И ЦИФРЫ -->
+                    <div class="flex-1 text-center font-plate font-black text-2xl tracking-wider overflow-hidden">
                         <span id="plate-text">А 777 АА</span>
                     </div>
 
-                    <!-- ПРАВАЯ ЧАСТЬ (РЕГИОН + SVG ФЛАГ) -->
-                    <div class="border-l-2 border-slate-300 pl-3 flex flex-col items-center justify-center min-w-[70px]">
+                    <!-- ДИНАМИЧЕСКИЙ БЛОК ДЛЯ РОССИИ И БЕЛАРУСИ -->
+                    <div id="region-block" class="border-l-2 border-slate-300 pl-2.5 flex flex-col items-center justify-center min-w-[65px]">
                         <span id="plate-region" class="text-2xl font-plate font-black leading-none text-slate-900">777</span>
-                        <div class="flex items-center gap-1.5 mt-1">
+                        <div class="flex items-center gap-1 mt-1">
                             <span id="plate-code-text" class="text-[9px] font-bold tracking-widest text-slate-800">RUS</span>
-                            <div id="svg-flag-box" class="w-5 h-3.5 rounded-sm overflow-hidden border border-slate-400 shadow-sm flex items-center justify-center">
-                                <!-- Динамический векторный флаг -->
-                            </div>
+                            <div id="svg-flag-box" class="w-5 h-3.5 rounded-sm overflow-hidden border border-slate-400 shadow-sm flex items-center justify-center"></div>
                         </div>
+                    </div>
+
+                    <!-- ДИНАМИЧЕСКИЙ БЛОК ДЛЯ УКРАИНЫ (СЛЕВА) -->
+                    <div id="ua-badge" class="hidden absolute left-0 top-0 bottom-0 bg-blue-700 text-white w-7 flex flex-col items-center justify-center border-r-2 border-black">
+                        <div class="w-4 h-3 bg-yellow-400 rounded-sm mb-1"></div>
+                        <span class="text-[9px] font-black tracking-widest text-white">UA</span>
                     </div>
 
                 </div>
             </div>
 
-            <!-- Инфо блока стоимости при выпадении -->
+            <!-- ИНФО О СТОИМОСТИ -->
             <div id="info-box" class="text-center my-1 hidden glass-panel p-3 rounded-xl w-full border border-slate-800">
                 <p id="res-title" class="text-xs font-bold text-indigo-400 uppercase tracking-widest"></p>
                 <p class="text-xs text-slate-300 mt-1">ОЦЕНКА: <span id="res-val" class="text-emerald-400 font-black text-sm">0</span> ₽</p>
             </div>
 
-            <!-- СЕЛЕКТОР СТРАНЫ И РЕГИОНА С ДИНАМИЧЕСКОЙ ЦЕНОЙ -->
+            <!-- ВЫБОР СТРАНЫ И ОБЛАСТИ / РЕГИОНА -->
             <div class="w-full space-y-3 mt-auto pt-4">
                 <div class="flex gap-2">
                     <select id="country-select" onchange="onCountryChange()" class="bg-slate-800/90 border border-slate-700/80 rounded-xl p-3 text-xs font-bold text-white focus:outline-none flex-1">
@@ -242,19 +245,24 @@ def get_webapp():
                     </select>
 
                     <select id="region-select" onchange="calculateSpinPrice()" class="bg-slate-800/90 border border-slate-700/80 rounded-xl p-3 text-xs font-bold text-white focus:outline-none flex-1">
-                        <!-- Динамически заполняется -->
                     </select>
                 </div>
 
-                <!-- КНОПКА КРУТКИ С ЦЕНОЙ -->
-                <button onclick="spin()" id="spin-btn" class="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 text-slate-950 font-black py-4 rounded-xl shadow-lg transition flex items-center justify-between px-6 active:scale-[0.98]">
-                    <span>🎰 КРУТИТЬ НОМЕР</span>
-                    <span id="spin-price-badge" class="bg-slate-950/20 text-slate-950 border border-slate-950/30 px-3 py-1 rounded-lg text-xs font-black">1 000 ₽</span>
-                </button>
+                <!-- КНОПКИ КРУТКИ И ПРОДАЖИ -->
+                <div class="flex gap-2">
+                    <button onclick="spin()" id="spin-btn" class="flex-1 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 text-slate-950 font-black py-4 rounded-xl shadow-lg transition flex items-center justify-between px-5 active:scale-[0.98]">
+                        <span>🎰 КРУТИТЬ</span>
+                        <span id="spin-price-badge" class="bg-slate-950/20 text-slate-950 border border-slate-950/30 px-2.5 py-1 rounded-lg text-xs font-black">1 000 ₽</span>
+                    </button>
+
+                    <button onclick="sellCurrentPlate()" id="sell-btn" class="hidden bg-emerald-600 hover:bg-emerald-500 text-white font-black px-5 py-4 rounded-xl shadow-lg transition active:scale-[0.98] text-xs flex items-center gap-1">
+                        💵 Продать
+                    </button>
+                </div>
             </div>
         </div>
 
-        <!-- МОДАЛЬНОЕ ОКНО ДЛЯ РЕДКИХ НОМЕРОВ (ПРОДАТЬ ИЛИ ОСТАВИТЬ) -->
+        <!-- МОДАЛЬНОЕ ОКНО ДЛЯ РЕДКИХ НОМЕРОВ -->
         <div id="rare-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
             <div class="glass-panel p-6 rounded-2xl max-w-sm w-full text-center space-y-4 border border-amber-500/50 shadow-2xl">
                 <div class="text-3xl">🔥</div>
@@ -296,7 +304,6 @@ def get_webapp():
                 </div>
             </div>
 
-            <!-- МЕНЮ КНОПОК ХАБА -->
             <div class="grid grid-cols-2 gap-3">
                 <button onclick="showView('garage')" class="glass-panel p-4 rounded-2xl border border-slate-800 flex flex-col items-center justify-center gap-2 hover:border-slate-600 transition active:scale-95">
                     <span class="text-3xl">🚗</span>
@@ -307,7 +314,7 @@ def get_webapp():
                 <button onclick="showView('quests')" class="glass-panel p-4 rounded-2xl border border-slate-800 flex flex-col items-center justify-center gap-2 hover:border-slate-600 transition active:scale-95">
                     <span class="text-3xl">🎯</span>
                     <span class="text-xs font-bold text-white">Квесты</span>
-                    <span class="text-[10px] text-amber-400">Путь новичка</span>
+                    <span class="text-[10px] text-amber-400">Задания</span>
                 </button>
 
                 <button onclick="showView('market')" class="glass-panel p-4 rounded-2xl border border-slate-800 flex flex-col items-center justify-center gap-2 hover:border-slate-600 transition active:scale-95">
@@ -323,7 +330,6 @@ def get_webapp():
                 </button>
             </div>
 
-            <!-- КНОПКА АДМИНКИ -->
             <button id="admin-menu-btn" onclick="showView('admin')" class="hidden w-full bg-rose-600/20 border border-rose-500/50 text-rose-300 font-bold py-3.5 rounded-xl text-xs transition flex items-center justify-center gap-2">
                 👑 Терминал Администратора
             </button>
@@ -332,27 +338,25 @@ def get_webapp():
         <!-- ЭКРАН 3: ГАРАЖ -->
         <div id="view-garage" class="p-4 hidden flex-col flex-1 max-w-md mx-auto w-full space-y-3">
             <button onclick="showView('profile')" class="text-xs text-indigo-400 font-bold flex items-center gap-1 mb-1">
-                ← Назад в профиль
+                ← Назад в меню
             </button>
             <h2 class="text-sm font-bold text-slate-200">Гараж госномеров</h2>
-            <div id="garage-list" class="space-y-3">
-                <div class="text-center text-slate-500 py-12 text-xs">Гараж пуст. Начните крутить номера!</div>
-            </div>
+            <div id="garage-list" class="space-y-3"></div>
         </div>
 
-        <!-- ЭКРАН 4: ИНТЕРАКТИВНЫЕ КВЕСТЫ -->
+        <!-- ЭКРАН 4: ГНЕЗДО КВЕСТОВ -->
         <div id="view-quests" class="p-4 hidden flex-col flex-1 max-w-md mx-auto w-full space-y-3">
             <button onclick="showView('profile')" class="text-xs text-indigo-400 font-bold flex items-center gap-1 mb-1">
-                ← Назад в профиль
+                ← Назад в меню
             </button>
-            <h2 class="text-sm font-bold text-slate-200 mb-2">🎯 Путь новичка</h2>
+            <h2 class="text-sm font-bold text-slate-200 mb-2">🎯 Квесты и Задания</h2>
             <div id="quests-list" class="space-y-3"></div>
         </div>
 
         <!-- ЭКРАН 5: БИРЖА -->
         <div id="view-market" class="p-4 hidden flex-col flex-1 max-w-md mx-auto w-full space-y-3">
             <button onclick="showView('profile')" class="text-xs text-indigo-400 font-bold flex items-center gap-1 mb-1">
-                ← Назад в профиль
+                ← Назад в меню
             </button>
             <h2 class="text-sm font-bold text-slate-200 mb-1">📈 Глобальная биржа</h2>
             <div id="market-list" class="space-y-3"></div>
@@ -361,7 +365,7 @@ def get_webapp():
         <!-- ЭКРАН 6: АДМИН-ПАНЕЛЬ ПО ID -->
         <div id="view-admin" class="p-4 hidden flex-col flex-1 max-w-md mx-auto w-full space-y-3">
             <button onclick="showView('profile')" class="text-xs text-indigo-400 font-bold flex items-center gap-1 mb-1">
-                ← Назад в профиль
+                ← Назад в меню
             </button>
             <div class="glass-panel p-5 rounded-2xl border border-rose-500/40 space-y-3">
                 <div class="flex items-center justify-between">
@@ -371,7 +375,6 @@ def get_webapp():
                     </div>
                     <span class="bg-rose-600/30 border border-rose-500 text-rose-300 text-[9px] font-black px-2 py-0.5 rounded">⚡ АДМИН</span>
                 </div>
-                <p class="text-xs text-slate-400">Управление игроками для ID: <code class="text-rose-300 font-bold">__ADMIN_ID__</code></p>
                 
                 <div class="space-y-3 pt-2">
                     <div>
@@ -441,11 +444,12 @@ def get_webapp():
                 level: 1,
                 exp: 0,
                 garage: [],
+                lastDroppedPlate: null,
                 pendingRarePlate: null,
                 quests: [
-                    { id: 1, title: "Первая крутка", rewardMoney: 50000, rewardExp: 30, done: false },
-                    { id: 2, title: "Выбить редкий номер", rewardMoney: 150000, rewardExp: 50, done: false },
-                    { id: 3, title: "Продать номер на бирже", rewardMoney: 200000, rewardExp: 70, done: false }
+                    { id: 1, title: "Первая крутка слота", rewardMoney: 50000, rewardExp: 30, progress: 0, target: 1, done: false, claimed: false },
+                    { id: 2, title: "Выбить 3 редких номера", rewardMoney: 150000, rewardExp: 50, progress: 0, target: 3, done: false, claimed: false },
+                    { id: 3, title: "Продать номер на бирже", rewardMoney: 200000, rewardExp: 70, progress: 0, target: 1, done: false, claimed: false }
                 ],
                 market: [
                     { id: 1, number: "А 777 АА", region: "777", title: "🔥 МИФИЧЕСКИЙ НОМЕР", price: 600000, seller: "CyberLord", color: "red" },
@@ -454,30 +458,55 @@ def get_webapp():
             };
 
             const RU_REGIONS = ['77', '99', '177', '199', '777', '799', '78', '98', '178', '198', '50', '90', '150', '161', '125'];
-            const UA_REGIONS = ['AA', 'KA', 'BC', 'HC', 'AE', 'BH', 'BI', 'AX', 'AP', 'CB'];
+            const UA_OBLASTS = ['AA', 'KA', 'BC', 'HC', 'AE', 'BH', 'BI', 'AX', 'AP', 'CB', 'AM', 'AO', 'BX'];
             const BY_REGIONS = ['1', '2', '3', '4', '5', '6', '7'];
+
+            function showToast(msg, icon = "🔔") {
+                let toast = document.getElementById('toast');
+                document.getElementById('toast-msg').innerText = msg;
+                document.getElementById('toast-icon').innerText = icon;
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 3000);
+            }
+
+            function animateBalance(targetValue) {
+                let currentVal = state.balance;
+                let step = Math.ceil(Math.abs(targetValue - currentVal) / 12);
+                let timer = setInterval(() => {
+                    if (currentVal < targetValue) {
+                        currentVal = Math.min(currentVal + step, targetValue);
+                    } else if (currentVal > targetValue) {
+                        currentVal = Math.max(currentVal - step, targetValue);
+                    }
+                    document.getElementById('balance').innerText = currentVal.toLocaleString('ru-RU') + ' ₽';
+                    if (currentVal === targetValue) {
+                        clearInterval(timer);
+                        state.balance = targetValue;
+                    }
+                }, 25);
+            }
 
             function onCountryChange() {
                 let country = document.getElementById('country-select').value;
                 let regionSelect = document.getElementById('region-select');
                 regionSelect.innerHTML = '';
 
-                let list = country === 'ru' ? RU_REGIONS : (country === 'ua' ? UA_REGIONS : BY_REGIONS);
+                let list = country === 'ru' ? RU_REGIONS : (country === 'ua' ? UA_OBLASTS : BY_REGIONS);
                 
                 let defaultOpt = document.createElement('option');
                 defaultOpt.value = "auto";
-                defaultOpt.innerText = "🎲 Любой регион";
+                defaultOpt.innerText = country === 'ua' ? "🎲 Любая область" : "🎲 Любой регион";
                 regionSelect.appendChild(defaultOpt);
 
                 list.forEach(r => {
                     let opt = document.createElement('option');
                     opt.value = r;
-                    opt.innerText = `Регион ${r}`;
+                    opt.innerText = country === 'ua' ? `Область ${r}` : `Регион ${r}`;
                     regionSelect.appendChild(opt);
                 });
 
                 calculateSpinPrice();
-                updatePlateVisual(country, 'А 777 АА', list[0], 'yellow');
+                updatePlateVisual(country, country === 'ua' ? 'AA 7777 AB' : 'А 777 АА', list[0], 'yellow');
             }
 
             function calculateSpinPrice() {
@@ -495,18 +524,14 @@ def get_webapp():
                 if (state.exp >= 100) {
                     state.level += 1;
                     state.exp -= 100;
-                    state.balance += 200000; // Награда за уровень
-                    alert(`🎉 ПОЗДРАВЛЯЕМ! Новый Уровень ${state.level}! Получено +200 000 ₽!`);
+                    let reward = 200000;
+                    animateBalance(state.balance + reward);
+                    showToast(`🎉 НОВЫЙ УРОВЕНЬ ${state.level}! Награда: +${reward.toLocaleString('ru-RU')} ₽!`, "⭐");
                 }
                 updateUI();
             }
 
             function updateUI() {
-                let balEl = document.getElementById('balance');
-                balEl.innerText = state.balance.toLocaleString('ru-RU') + ' ₽';
-                balEl.classList.add('balance-pop');
-                setTimeout(() => balEl.classList.remove('balance-pop'), 400);
-
                 document.getElementById('level').innerText = state.level;
                 document.getElementById('exp').innerText = state.exp;
                 document.getElementById('menu-garage-count').innerText = state.garage.length;
@@ -529,42 +554,48 @@ def get_webapp():
                 let plateBox = document.getElementById('plate-box');
                 let codeText = document.getElementById('plate-code-text');
                 let svgBox = document.getElementById('svg-flag-box');
-                
+                let regionBlock = document.getElementById('region-block');
+                let uaBadge = document.getElementById('ua-badge');
+
                 plateBox.className = `relative bg-white text-black border-4 rounded-xl shadow-2xl w-full max-w-[340px] h-28 flex items-center justify-between px-3 overflow-hidden transition-all duration-300 glow-${colorClass}`;
                 document.getElementById('plate-text').innerText = numberText;
                 document.getElementById('plate-region').innerText = regionText;
 
-                if (country === 'ru') {
-                    codeText.innerText = 'RUS';
-                    svgBox.innerHTML = '<svg class="w-full h-full" viewBox="0 0 36 24"><rect width="36" height="8" fill="#fff"/><rect y="8" width="36" height="8" fill="#0039a6"/><rect y="16" width="36" height="8" fill="#d52b1e"/></svg>';
-                } else if (country === 'ua') {
-                    codeText.innerText = 'UA';
-                    svgBox.innerHTML = '<svg class="w-full h-full" viewBox="0 0 36 24"><rect width="36" height="12" fill="#0057b7"/><rect y="12" width="36" height="12" fill="#ffd700"/></svg>';
-                } else if (country === 'by') {
-                    codeText.innerText = 'BY';
-                    svgBox.innerHTML = '<svg class="w-full h-full" viewBox="0 0 36 24"><rect width="36" height="15" fill="#d52b1e"/><rect y="15" width="36" height="9" fill="#008751"/><rect width="10" height="24" fill="#fff"/></svg>';
+                if (country === 'ua') {
+                    regionBlock.classList.add('hidden');
+                    uaBadge.classList.remove('hidden');
+                } else {
+                    regionBlock.classList.remove('hidden');
+                    uaBadge.classList.add('hidden');
+
+                    if (country === 'ru') {
+                        codeText.innerText = 'RUS';
+                        svgBox.innerHTML = '<svg class="w-full h-full" viewBox="0 0 36 24"><rect width="36" height="8" fill="#fff"/><rect y="8" width="36" height="8" fill="#0039a6"/><rect y="16" width="36" height="8" fill="#d52b1e"/></svg>';
+                    } else if (country === 'by') {
+                        codeText.innerText = 'BY';
+                        svgBox.innerHTML = '<svg class="w-full h-full" viewBox="0 0 36 24"><rect width="36" height="15" fill="#d52b1e"/><rect y="15" width="36" height="9" fill="#008751"/><rect width="10" height="24" fill="#fff"/></svg>';
+                    }
                 }
             }
 
             async function spin() {
                 let price = calculateSpinPrice();
                 if (state.balance < price) {
-                    alert('Недостаточно рублей!');
+                    showToast('Недостаточно рублей на балансе!', '❌');
                     return;
                 }
-                state.balance -= price;
-                updateUI();
+                
+                animateBalance(state.balance - price);
 
                 let country = document.getElementById('country-select').value;
                 let region = document.getElementById('region-select').value;
                 let infoBox = document.getElementById('info-box');
                 infoBox.classList.add('hidden');
 
-                // Анимация перебора
                 let counter = 0;
                 let interval = setInterval(() => {
                     let randNum = Math.floor(100 + Math.random() * 900);
-                    updatePlateVisual(country, `Х ${randNum} ХХ`, '99', 'gray');
+                    updatePlateVisual(country, country === 'ua' ? `АА ${randNum} ВХ` : `Х ${randNum} ХХ`, '99', 'gray');
                     counter++;
                     if (counter > 12) clearInterval(interval);
                 }, 40);
@@ -575,7 +606,6 @@ def get_webapp():
                     setTimeout(() => {
                         updatePlateVisual(country, data.number, data.region, data.color);
                         
-                        // Анимация нарастания цены
                         document.getElementById('res-title').innerText = data.title;
                         infoBox.classList.remove('hidden');
                         
@@ -589,10 +619,20 @@ def get_webapp():
                             document.getElementById('res-val').innerText = startVal.toLocaleString('ru-RU');
                         }, 25);
 
-                        addExp(15); // Начисление опыта за крутку
-                        state.quests[0].done = true; // Выполнен квест на первую крутку
+                        addExp(15);
+                        
+                        // Прогресс квестов
+                        state.quests[0].progress = 1;
+                        if (state.quests[0].progress >= state.quests[0].target) state.quests[0].done = true;
 
-                        // Если высокая редкость - модалка с выбором
+                        if (['green', 'blue', 'yellow', 'red', 'purple'].includes(data.color)) {
+                            state.quests[1].progress += 1;
+                            if (state.quests[1].progress >= state.quests[1].target) state.quests[1].done = true;
+                        }
+
+                        state.lastDroppedPlate = data;
+                        document.getElementById('sell-btn').classList.remove('hidden');
+
                         if (['yellow', 'red', 'purple'].includes(data.color)) {
                             state.pendingRarePlate = data;
                             document.getElementById('modal-rarity-title').innerText = `ВЫПАЛ ${data.title}!`;
@@ -609,17 +649,34 @@ def get_webapp():
                 }
             }
 
+            function sellCurrentPlate() {
+                if (!state.lastDroppedPlate) return;
+                let val = state.lastDroppedPlate.value;
+                animateBalance(state.balance + val);
+                
+                // Если номер успел попасть в гараж — удаляем его
+                let index = state.garage.indexOf(state.lastDroppedPlate);
+                if (index > -1) state.garage.splice(index, 1);
+
+                showToast(`💵 Продано! +${val.toLocaleString('ru-RU')} ₽`, '💰');
+                document.getElementById('sell-btn').classList.add('hidden');
+                document.getElementById('info-box').classList.add('hidden');
+                state.lastDroppedPlate = null;
+                updateUI();
+            }
+
             function modalAction(action) {
                 document.getElementById('rare-modal').classList.add('hidden');
                 if (!state.pendingRarePlate) return;
 
                 if (action === 'sell') {
-                    state.balance += state.pendingRarePlate.value;
-                    alert(`💵 Продано! +${state.pendingRarePlate.value.toLocaleString('ru-RU')} ₽ на баланс!`);
+                    animateBalance(state.balance + state.pendingRarePlate.value);
+                    showToast(`💵 Продано! +${state.pendingRarePlate.value.toLocaleString('ru-RU')} ₽`, '💰');
                 } else {
                     state.garage.unshift(state.pendingRarePlate);
-                    alert('🚗 Номер сохранен в ваш гараж!');
+                    showToast('🚗 Номер сохранен в ваш гараж!', '✅');
                 }
+                document.getElementById('sell-btn').classList.add('hidden');
                 state.pendingRarePlate = null;
                 updateUI();
             }
@@ -634,7 +691,7 @@ def get_webapp():
                     <div class="glass-panel p-3.5 rounded-xl flex justify-between items-center border glow-${item.color}">
                         <div>
                             <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-400">${item.title}</span>
-                            <div class="text-base font-plate font-black text-white mt-0.5">${item.number} | ${item.region}</div>
+                            <div class="text-base font-plate font-black text-white mt-0.5">${item.number} ${item.region !== "UA" ? "| " + item.region : ""}</div>
                             <span class="text-xs text-emerald-400 font-semibold">Ценность: ${item.value.toLocaleString('ru-RU')} ₽</span>
                         </div>
                         <div class="flex gap-2">
@@ -647,8 +704,9 @@ def get_webapp():
 
             function sellItem(index) {
                 let item = state.garage[index];
-                state.balance += item.value;
+                animateBalance(state.balance + item.value);
                 state.garage.splice(index, 1);
+                showToast(`💵 Продано! +${item.value.toLocaleString('ru-RU')} ₽`, '💰');
                 updateUI();
                 tg.HapticFeedback?.impactOccurred('medium');
             }
@@ -665,9 +723,12 @@ def get_webapp():
                     color: item.color
                 });
                 state.garage.splice(index, 1);
+                
+                state.quests[2].progress = 1;
                 state.quests[2].done = true;
+
+                showToast("Номер выставлен на биржу!", "📈");
                 updateUI();
-                alert("Номер успешно выставлен на биржу!");
             }
 
             function renderMarket() {
@@ -676,7 +737,7 @@ def get_webapp():
                     <div class="glass-panel p-3.5 rounded-xl flex justify-between items-center border border-slate-800">
                         <div>
                             <span class="text-[10px] text-slate-400">Продавец: ${item.seller}</span>
-                            <div class="text-base font-plate font-black text-amber-400 mt-0.5">${item.number} | ${item.region}</div>
+                            <div class="text-base font-plate font-black text-amber-400 mt-0.5">${item.number} ${item.region !== "UA" ? "| " + item.region : ""}</div>
                             <span class="text-xs text-slate-300">${item.title}</span>
                         </div>
                         <div class="text-right">
@@ -690,14 +751,14 @@ def get_webapp():
             function buyMarketItem(index) {
                 let item = state.market[index];
                 if (state.balance < item.price) {
-                    alert("Недостаточно средств!");
+                    showToast("Недостаточно средств на балансе!", "❌");
                     return;
                 }
-                state.balance -= item.price;
+                animateBalance(state.balance - item.price);
                 state.garage.unshift({ number: item.number, region: item.region, title: item.title, value: item.price, color: item.color || 'blue' });
                 state.market.splice(index, 1);
+                showToast("Номер успешно куплен!", "✅");
                 updateUI();
-                tg.HapticFeedback?.notificationOccurred('success');
             }
 
             function renderQuests() {
@@ -708,34 +769,38 @@ def get_webapp():
                             <div class="text-xs font-bold text-slate-200">${q.title}</div>
                             <div class="text-[10px] text-emerald-400">+${q.rewardMoney.toLocaleString('ru-RU')} ₽ • +${q.rewardExp} EXP</div>
                         </div>
-                        ${q.done ? `<button onclick="claimQuest(${idx})" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3 py-1.5 rounded-lg text-xs">Забрать</button>` : `<span class="text-xs text-slate-500 font-bold">В процессе</span>`}
+                        ${q.claimed 
+                            ? `<span class="text-xs text-slate-500 font-bold">Выполнено</span>` 
+                            : (q.done 
+                                ? `<button onclick="claimQuest(${idx})" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3 py-1.5 rounded-lg text-xs">Забрать</button>` 
+                                : `<span class="text-xs text-slate-400 font-bold">${q.progress}/${q.target}</span>`
+                            )
+                        }
                     </div>
                 `).join('');
             }
 
             function claimQuest(idx) {
                 let q = state.quests[idx];
-                state.balance += q.rewardMoney;
+                q.claimed = true;
+                animateBalance(state.balance + q.rewardMoney);
                 addExp(q.rewardExp);
-                state.quests.splice(idx, 1);
+                showToast(`🎯 Задание выполнено: +${q.rewardMoney.toLocaleString('ru-RU')} ₽!`, "🎉");
                 updateUI();
-                alert(`🎯 Награда получена: +${q.rewardMoney.toLocaleString('ru-RU')} ₽ и +${q.rewardExp} EXP!`);
             }
 
-            // АДМИН-ФУНКЦИИ
             function adminGiveMoney() {
                 let targetId = document.getElementById('admin-target-id').value;
                 let amount = parseInt(document.getElementById('admin-money-amount').value) || 0;
-                state.balance += amount;
-                updateUI();
-                alert(`⚡ [АДМИН] Успешно начислено +${amount.toLocaleString('ru-RU')} ₽ для ID ${targetId}!`);
+                animateBalance(state.balance + amount);
+                showToast(`⚡ [АДМИН] Начислено +${amount.toLocaleString('ru-RU')} ₽ для ID ${targetId}!`, "👑");
             }
 
             function adminGiveExp() {
                 let targetId = document.getElementById('admin-target-id').value;
                 let amount = parseInt(document.getElementById('admin-exp-amount').value) || 0;
                 addExp(amount);
-                alert(`⚡ [АДМИН] Успешно начислено +${amount} EXP для ID ${targetId}!`);
+                showToast(`⚡ [АДМИН] Начислено +${amount} EXP для ID ${targetId}!`, "👑");
             }
 
             function adminGiveCustomPlate() {
@@ -756,12 +821,11 @@ def get_webapp():
                     color: color
                 });
                 
-                // Очищаем поля после выдачи для удобства следующего ввода
                 numInput.value = '';
                 rarityInput.selectedIndex = 0;
 
+                showToast(`⚡ Номер "${num}" (${rarity}) выдан! Поля очищены.`, "👑");
                 updateUI();
-                alert(`⚡ [АДМИН] Номер "${num}" (${rarity}) успешно выдан в гараж! Поля очищены.`);
             }
 
             onCountryChange();
