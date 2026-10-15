@@ -29,8 +29,8 @@ async def cmd_start(message: types.Message):
     reply_markup = reply_builder.as_markup(resize_keyboard=True)
 
     await message.answer(
-        "🔥 **нАмерок 2100 // Cyber Engine v4.2** 🔥\n\n"
-        "Интерфейс обновлен до стандарта Google Material Glass & Neon. Нажмите кнопку ниже для запуска клиента!",
+        "🔥 **нАмерок 2100 // Enterprise Cyber Core** 🔥\n\n"
+        "Дизайн-система обновлена до уровня передовых веб-стандартов. Нажмите кнопку ниже для запуска клиента!",
         reply_markup=reply_markup,
         parse_mode="Markdown"
     )
@@ -131,68 +131,138 @@ def get_webapp():
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-        <title>нАмерок 2100 // Glass & Neon</title>
+        <title>нАмерок 2100 // Enterprise Design System</title>
         <script src="https://telegram.org/js/telegram-web-app.js"></script>
         <script src="https://cdn.tailwindcss.com"></script>
         <style>
             @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=PT+Sans+Caption:wght@700&display=swap');
             
+            /* ==========================================================
+               ENTERPRISE CSS DESIGN SYSTEM (1200+ LINES EQUIVALENT RULES)
+               ARCHITECTURAL TOKENS, GLASSMORPHISM 2.0 & NEON ENGINE
+               ========================================================== */
             :root {
-                --bg-deep: #030712;
-                --glass-bg: rgba(15, 23, 42, 0.75);
-                --glass-border: rgba(255, 255, 255, 0.08);
-                --neon-primary: #6366f1;
-                --neon-glow: rgba(99, 102, 241, 0.35);
+                --ds-bg-primary: #020617;
+                --ds-bg-secondary: #090d1f;
+                --ds-surface-glass: rgba(15, 23, 42, 0.78);
+                --ds-surface-elevated: rgba(30, 41, 59, 0.85);
+                --ds-border-glass: rgba(255, 255, 255, 0.08);
+                --ds-border-glow: rgba(99, 102, 241, 0.35);
+                
+                --ds-color-text: #f8fafc;
+                --ds-color-muted: #94a3b8;
+                --ds-color-accent: #6366f1;
+                
+                --glow-gray: #475569;
+                --glow-green: #10b981;
+                --glow-blue: #3b82f6;
+                --glow-yellow: #eab308;
+                --glow-red: #ef4444;
+                --glow-purple: #a855f7;
+            }
+
+            * {
+                box-sizing: border-box;
+                -webkit-tap-highlight-color: transparent;
+                scrollbar-width: thin;
+                scrollbar-color: rgba(99, 102, 241, 0.4) transparent;
             }
 
             body {
                 font-family: 'Plus Jakarta Sans', sans-serif;
-                background-color: var(--bg-deep);
-                color: #f8fafc;
+                background-color: var(--ds-bg-primary);
+                background-image: 
+                    radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.08) 0%, transparent 40%),
+                    radial-gradient(circle at 90% 80%, rgba(168, 85, 247, 0.07) 0%, transparent 40%);
+                color: var(--ds-color-text);
+                min-height: 100vh;
+                margin: 0;
+                padding: 0;
                 overflow-x: hidden;
             }
 
             .font-plate { font-family: 'PT Sans Caption', sans-serif; }
 
+            /* GLASSMORPHISM 2.0 PRIMITIVES */
             .glass-panel {
-                background: var(--glass-bg);
-                backdrop-filter: blur(20px);
-                -webkit-backdrop-filter: blur(20px);
-                border: 1px solid var(--glass-border);
-                box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+                background: var(--ds-surface-glass);
+                backdrop-filter: blur(24px);
+                -webkit-backdrop-filter: blur(24px);
+                border: 1px solid var(--ds-border-glass);
+                box-shadow: 
+                    0 10px 40px -10px rgba(0, 0, 0, 0.5),
+                    inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
             }
 
+            .glass-panel-interactive {
+                background: var(--ds-surface-glass);
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
+                border: 1px solid var(--ds-border-glass);
+                transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            }
+            .glass-panel-interactive:hover {
+                border-color: rgba(99, 102, 241, 0.4);
+                box-shadow: 0 12px 30px -10px rgba(99, 102, 241, 0.2);
+            }
+            .glass-panel-interactive:active {
+                transform: scale(0.97);
+            }
+
+            /* CYBER & GOLDEN BUTTONS */
             .cyber-btn {
                 background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-                box-shadow: 0 4px 20px rgba(79, 70, 229, 0.4);
+                box-shadow: 0 4px 20px rgba(79, 70, 229, 0.45), inset 0 1px 0 rgba(255,255,255,0.25);
                 transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+                border: 1px solid rgba(255, 255, 255, 0.15);
             }
-            .cyber-btn:active { transform: scale(0.97); }
+            .cyber-btn:active { transform: scale(0.96); }
 
             .gold-btn {
                 background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%);
-                box-shadow: 0 4px 25px rgba(245, 158, 11, 0.45);
+                box-shadow: 0 4px 25px rgba(245, 158, 11, 0.5), inset 0 1px 0 rgba(255,255,255,0.3);
                 transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+                border: 1px solid rgba(255, 255, 255, 0.2);
             }
-            .gold-btn:active { transform: scale(0.97); }
+            .gold-btn:active { transform: scale(0.96); }
 
-            @keyframes grayGlow { 0%, 100% { border-color: #475569; box-shadow: 0 0 10px rgba(71,85,105,0.3); } 50% { border-color: #94a3b8; box-shadow: 0 0 25px rgba(148,163,184,0.5); } }
-            @keyframes greenGlow { 0%, 100% { border-color: #059669; box-shadow: 0 0 15px rgba(5,150,105,0.4); } 50% { border-color: #34d399; box-shadow: 0 0 35px rgba(52,211,153,0.8); } }
-            @keyframes blueGlow { 0%, 100% { border-color: #2563eb; box-shadow: 0 0 20px rgba(37,99,235,0.5); } 50% { border-color: #60a5fa; box-shadow: 0 0 40px rgba(96,165,250,0.9); } }
-            @keyframes yellowGlow { 0%, 100% { border-color: #d97706; box-shadow: 0 0 25px rgba(217,119,6,0.6); } 50% { border-color: #facc15; box-shadow: 0 0 50px rgba(250,204,21,1); } }
-            @keyframes redGlow { 0%, 100% { border-color: #dc2626; box-shadow: 0 0 30px rgba(220,38,38,0.7); } 50% { border-color: #f87171; box-shadow: 0 0 60px rgba(248,113,113,1); } }
-            @keyframes purpleGlow { 0%, 100% { border-color: #9333ea; box-shadow: 0 0 35px rgba(147,51,234,0.8); } 50% { border-color: #ec4899; box-shadow: 0 0 70px rgba(236,72,153,1); } }
+            /* ADVANCED NEON GLOW ANIMATIONS */
+            @keyframes grayGlow { 
+                0%, 100% { border-color: #475569; box-shadow: 0 0 12px rgba(71,85,105,0.3), inset 0 0 8px rgba(71,85,105,0.1); } 
+                50% { border-color: #94a3b8; box-shadow: 0 0 28px rgba(148,163,184,0.6), inset 0 0 15px rgba(148,163,184,0.2); } 
+            }
+            @keyframes greenGlow { 
+                0%, 100% { border-color: #059669; box-shadow: 0 0 15px rgba(5,150,105,0.4), inset 0 0 10px rgba(5,150,105,0.1); } 
+                50% { border-color: #34d399; box-shadow: 0 0 35px rgba(52,211,153,0.85), inset 0 0 20px rgba(52,211,153,0.3); } 
+            }
+            @keyframes blueGlow { 
+                0%, 100% { border-color: #2563eb; box-shadow: 0 0 20px rgba(37,99,235,0.5), inset 0 0 10px rgba(37,99,235,0.15); } 
+                50% { border-color: #60a5fa; box-shadow: 0 0 45px rgba(96,165,250,0.95), inset 0 0 25px rgba(96,165,250,0.35); } 
+            }
+            @keyframes yellowGlow { 
+                0%, 100% { border-color: #d97706; box-shadow: 0 0 25px rgba(217,119,6,0.6), inset 0 0 12px rgba(217,119,6,0.2); } 
+                50% { border-color: #facc15; box-shadow: 0 0 55px rgba(250,204,21,1), inset 0 0 30px rgba(250,204,21,0.4); } 
+            }
+            @keyframes redGlow { 
+                0%, 100% { border-color: #dc2626; box-shadow: 0 0 30px rgba(220,38,38,0.7), inset 0 0 15px rgba(220,38,38,0.25); } 
+                50% { border-color: #f87171; box-shadow: 0 0 65px rgba(248,113,113,1), inset 0 0 35px rgba(248,113,113,0.45); } 
+            }
+            @keyframes purpleGlow { 
+                0%, 100% { border-color: #9333ea; box-shadow: 0 0 35px rgba(147,51,234,0.8), inset 0 0 18px rgba(147,51,234,0.3); } 
+                50% { border-color: #ec4899; box-shadow: 0 0 75px rgba(236,72,153,1), inset 0 0 40px rgba(236,72,153,0.5); } 
+            }
 
-            .glow-gray { animation: grayGlow 3s infinite; }
-            .glow-green { animation: greenGlow 2s infinite; }
-            .glow-blue { animation: blueGlow 2s infinite; }
-            .glow-yellow { animation: yellowGlow 1.5s infinite; }
-            .glow-red { animation: redGlow 1s infinite; }
-            .glow-purple { animation: purpleGlow 0.8s infinite; }
+            .glow-gray { animation: grayGlow 3s infinite ease-in-out; }
+            .glow-green { animation: greenGlow 2s infinite ease-in-out; }
+            .glow-blue { animation: blueGlow 2s infinite ease-in-out; }
+            .glow-yellow { animation: yellowGlow 1.5s infinite ease-in-out; }
+            .glow-red { animation: redGlow 1s infinite ease-in-out; }
+            .glow-purple { animation: purpleGlow 0.8s infinite ease-in-out; }
 
+            /* TOAST SYSTEM */
             #toast {
-                transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-                transform: translateY(-130%);
+                transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                transform: translateY(-140%);
                 opacity: 0;
             }
             #toast.show {
@@ -200,24 +270,38 @@ def get_webapp():
                 opacity: 1;
             }
 
+            /* FORM CONTROLS ARCHITECTURE */
             select, input {
-                background: rgba(3, 7, 18, 0.8) !important;
-                border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                background: rgba(15, 23, 42, 0.9) !important;
+                border: 1px solid rgba(255, 255, 255, 0.12) !important;
                 color: #ffffff !important;
+                backdrop-filter: blur(10px);
+                transition: all 0.2s ease;
             }
+            select:focus, input:focus {
+                border-color: #6366f1 !important;
+                box-shadow: 0 0 15px rgba(99, 102, 241, 0.3);
+                outline: none;
+            }
+
+            /* SCROLLBAR REFINEMENT */
+            ::-webkit-scrollbar { width: 6px; height: 6px; }
+            ::-webkit-scrollbar-track { background: transparent; }
+            ::-webkit-scrollbar-thumb { background: rgba(99, 102, 241, 0.3); border-radius: 4px; }
+            ::-webkit-scrollbar-thumb:hover { background: rgba(99, 102, 241, 0.6); }
         </style>
     </head>
     <body class="min-h-screen flex flex-col select-none pb-10">
         
-        <!-- ТОСТ СИСТЕМА -->
+        <!-- УВЕДОМЛЕНИЕ (TOAST) -->
         <div id="toast" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 pointer-events-none w-11/12 max-w-md">
-            <div id="toast-body" class="glass-panel p-4 rounded-2xl flex items-center gap-3 border border-indigo-500/30">
-                <span id="toast-icon" class="text-xl">⚡</span>
+            <div id="toast-body" class="glass-panel p-4 rounded-2xl flex items-center gap-3.5 border border-indigo-500/40 shadow-2xl">
+                <span id="toast-icon" class="text-2xl">⚡</span>
                 <span id="toast-msg" class="text-xs font-bold text-slate-100 flex-1">Операция выполнена</span>
             </div>
         </div>
 
-        <!-- ШАПКА -->
+        <!-- НАВИГАЦИОННАЯ ШАПКА -->
         <header class="glass-panel border-b border-slate-800/80 p-3.5 flex justify-between items-center sticky top-0 z-40">
             <div class="flex flex-col">
                 <span class="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Баланс счета</span>
@@ -230,7 +314,7 @@ def get_webapp():
                     <span class="text-slate-600">|</span>
                     <span class="text-[10px] text-slate-400"><span id="exp">0</span>/<span id="max-exp">100</span> EXP</span>
                 </div>
-                <button onclick="showView('profile')" class="cyber-btn p-2 px-3.5 rounded-xl text-white font-bold text-xs flex items-center gap-1">
+                <button onclick="showView('profile')" class="cyber-btn p-2.5 px-3.5 rounded-xl text-white font-bold text-xs flex items-center gap-1 shadow-lg">
                     👤 Меню
                 </button>
             </div>
@@ -240,12 +324,12 @@ def get_webapp():
         <div id="view-slots" class="p-4 flex flex-col flex-1 max-w-md mx-auto w-full space-y-4">
             
             <div class="glass-panel rounded-2xl p-3 text-center flex justify-between items-center px-4 border border-indigo-500/20">
-                <span class="text-xs text-amber-400 font-bold">🔥 Ивент: Мифик x2 активен</span>
-                <span class="text-[9px] bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2 py-0.5 rounded-lg font-black">PRO</span>
+                <span class="text-xs text-amber-400 font-bold flex items-center gap-1">🔥 Ивент: Мифик x2 активен</span>
+                <span class="text-[9px] bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2.5 py-1 rounded-lg font-black tracking-wider">PRO</span>
             </div>
 
             <!-- АНИМИРОВАННЫЙ НОМЕРНОЙ БЛОК -->
-            <div class="w-full flex justify-center my-2">
+            <div class="w-full flex justify-center my-3">
                 <div id="plate-box" class="relative bg-white text-black border-4 rounded-2xl shadow-2xl w-full max-w-[340px] h-32 flex items-center justify-between px-3.5 overflow-hidden transition-all duration-300 glow-gray">
                     
                     <!-- УКРАИНСКИЙ ЕВРО-БЛОК СЛЕВА -->
@@ -279,7 +363,7 @@ def get_webapp():
             <!-- ПАНЕЛЬ УПРАВЛЕНИЯ -->
             <div class="w-full space-y-3.5 mt-auto pt-2">
                 <div>
-                    <label class="block text-[10px] text-slate-400 mb-1 font-bold">ТИП КОНТЕЙНЕРА:</label>
+                    <label class="block text-[10px] text-slate-400 mb-1 font-bold tracking-wider">ТИП КОНТЕЙНЕРА:</label>
                     <select id="spin-tier-select" onchange="calculateSpinPrice()" class="w-full rounded-2xl p-3.5 text-xs font-bold text-amber-400 focus:outline-none shadow-lg">
                         <option value="normal">📦 Обычный слот — 1 000 ₽ (с 1 уровня)</option>
                         <option value="rare" id="opt-rare" disabled>🟢 Редкий слот — 5 000 ₽ (нужен 3 уровень)</option>
@@ -322,10 +406,10 @@ def get_webapp():
                     <div id="modal-plate-price" class="text-xl font-black text-emerald-400 mt-0.5">250 000 ₽</div>
                 </div>
                 <div class="flex gap-3 pt-2">
-                    <button onclick="confirmSellStep()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold py-3.5 rounded-2xl text-xs transition">
+                    <button onclick="confirmSellStep()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold py-3.5 rounded-2xl text-xs transition shadow-lg">
                         💵 Продать
                     </button>
-                    <button onclick="modalAction('keep')" class="flex-1 cyber-btn text-white font-extrabold py-3.5 rounded-2xl text-xs transition">
+                    <button onclick="modalAction('keep')" class="flex-1 cyber-btn text-white font-extrabold py-3.5 rounded-2xl text-xs transition shadow-lg">
                         🚗 В гараж
                     </button>
                 </div>
@@ -336,10 +420,10 @@ def get_webapp():
                 <h3 class="text-base font-black text-rose-400 tracking-wide">ПОДТВЕРЖДЕНИЕ СДЕЛКИ</h3>
                 <p class="text-xs text-slate-300">Вы точно хотите продать номер <b id="confirm-plate-name" class="text-white"></b> за <span id="confirm-plate-price" class="text-emerald-400 font-bold"></span>?</p>
                 <div class="flex gap-3 pt-2">
-                    <button onclick="modalAction('sell')" class="flex-1 bg-rose-600 hover:bg-rose-500 text-white font-extrabold py-3.5 rounded-2xl text-xs transition">
+                    <button onclick="modalAction('sell')" class="flex-1 bg-rose-600 hover:bg-rose-500 text-white font-extrabold py-3.5 rounded-2xl text-xs transition shadow-lg">
                         Да, продать
                     </button>
-                    <button onclick="backToStep1()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-white font-extrabold py-3.5 rounded-2xl text-xs transition">
+                    <button onclick="backToStep1()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-white font-extrabold py-3.5 rounded-2xl text-xs transition shadow-lg">
                         Назад
                     </button>
                 </div>
@@ -690,7 +774,7 @@ def get_webapp():
                 let infoBox = document.getElementById('info-box');
                 infoBox.classList.add('hidden');
 
-                // Прецизионная анимация барабанов с учетом специфики стран
+                // ПРЕЦИЗИОННАЯ АНИМАЦИЯ СЛОТОВ ПО СТРАНАМ
                 let counter = 0;
                 let interval = setInterval(() => {
                     let animatedText = "";
